@@ -1,0 +1,15 @@
+[Unit]
+Description=Raspberry Pi indiserver, network and power manager via Bluetooth
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=pi
+StartLimitBurst=10
+StartLimitIntervalSec=120
+ExecStart=/home/pi/RaspyINDIController/raspy-indi-controller
+
+[Install]
+WantedBy=multi-user.target

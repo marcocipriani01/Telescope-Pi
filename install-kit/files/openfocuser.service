@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenFocuser server
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=pi
+StartLimitBurst=10
+StartLimitIntervalSec=120
+ExecStart=/usr/bin/openfocuser -p=0
+
+[Install]
+WantedBy=multi-user.target

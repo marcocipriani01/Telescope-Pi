@@ -1,0 +1,9 @@
+#!/bin/bash
+cd "$(dirname "$0")/files"
+interface="$(awk '{print $1}' hotspot_config)"
+sudo ifconfig "$interface" up
+sudo service bluetooth start
+sudo rfkill unblock bluetooth
+sudo sdptool add SP
+echo "BT MAC address: $(hciconfig | grep Address | awk '{print $3}')"
+sudo python raspy-indi-controller.py "$USER" "$interface" "$(awk '{print $2}' hotspot_config)" "$(awk '{print $3}' hotspot_config)"
