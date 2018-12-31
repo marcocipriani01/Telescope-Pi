@@ -17,7 +17,7 @@ if [[ -z "$pswd" ]]; then
   echo "Error!"
   exit 2
 fi
-echo "$interface $(hostname) $pswd" > ../../hotspot_config
+echo "$interface $(hostname) $pswd" > ../../files/hotspot_config
 echo -e "\n========= Enabling systemd services ========="
 sudo systemctl stop raspy-indi-controller 2> /dev/null
 sudo cp raspy-indi-controller.service /lib/systemd/system/raspy-indi-controller.service
