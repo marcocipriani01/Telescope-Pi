@@ -1,7 +1,7 @@
 #!/bin/bash
 echo -e "********* WELCOME *********\n"
 
-whiptail --title "Astronomy Raspberry Pi" --backtitle "By marcocipriani01" \
+whiptail --title "Telescope-Pi" --backtitle "By marcocipriani01" \
 --msgbox "This script will set up your Raspberry Pi for astronomy. Hit OK to continue." 10 70
 name="$(whiptail --title "Astronomy Raspberry Pi" --backtitle "By marcocipriani01" \
 --inputbox "Enter device name on network:" 8 70 3>&1 1>&2 2>&3)"

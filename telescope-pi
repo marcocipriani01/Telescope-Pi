@@ -6,4 +6,4 @@ sudo service bluetooth start
 sudo rfkill unblock bluetooth
 sudo sdptool add SP
 echo "BT MAC address: $(hciconfig | grep Address | awk '{print $3}')"
-sudo python raspy-indi-controller.py "$USER" "$interface" "$(awk '{print $2}' hotspot_config)" "$(awk '{print $3}' hotspot_config)"
+sudo python telescope-pi.py "$USER" "$interface" "$(awk '{print $2}' hotspot_config)" "$(awk '{print $3}' hotspot_config)"
