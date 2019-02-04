@@ -1,0 +1,11 @@
+#!/bin/bash
+cd  ~
+wget --output-document=libindi.tar.gz "https://www.indilib.org/download/raspberry-pi/send/6-raspberry-pi/9-indi-library-for-raspberry-pi.html"
+rm -r libindi_1.7.4_rpi 2> /dev/null
+tar -xzf libindi.tar.gz
+cd libindi_1.7.4_rpi
+sudo dpkg -i *.deb
+cd ..
+rm -r libindi_1.7.4_rpi
+rm Downloads/libindi.tar.gz 2> /dev/null
+mv libindi.tar.gz Downloads/libindi.tar.gz
