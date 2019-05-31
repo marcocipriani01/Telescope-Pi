@@ -1,10 +1,10 @@
 #!/bin/bash
-name="$(whiptail --title "Telescope-Pi" --inputbox "Enter a hostname for this device:" 8 70 3>&1 1>&2 2>&3)"
-if [[ -z "$name" ]]; then
+hostname="$(whiptail --title "Telescope-Pi" --inputbox "Enter a hostname for this device:" 8 70 3>&1 1>&2 2>&3)"
+if [[ -z "$hostname" ]]; then
     echo "Error!"
     exit 1
 fi
-ch-hostname "$name"
+ch-hostname "$hostname"
 
 index=0
 while IFS= read -r line
@@ -14,12 +14,16 @@ do
   users[index]=""
   index=$((index+1))
 done < "/etc/passwd"
-username="$(whiptail --title "Telescope-Pi"  --menu "Telescope-Pi must run the INDI Web Manager as a non-root user. Choose your user in this list:" 16 78 10 "${users[@]}" 3>&1 1>&2 2>&3)"
+username="$(whiptail --title "Telescope-Pi"  --menu "Telescope-Pi must run the INDI Web Manager as a non-root user. Choose your user in this list:" 25 78 15 "${users[@]}" 3>&1 1>&2 2>&3)"
+if [[ -z "$username" ]]; then
+    echo "Error!"
+    exit 2
+fi
 
 ln -sf /lib/systemd/resolv.conf /etc/resolv.conf
 /etc/init.d/networking restart
 
-pip3 install -y indiweb pybluez wifi sh
+pip3 install indiweb pybluez wifi sh
 
 rfkill block bluetooth
 systemctl stop bluetooth
@@ -45,9 +49,9 @@ fi
 pswd="$(whiptail --title "Telescope-Pi" --inputbox "Enter a password for the hotspot:" 8 70 3>&1 1>&2 2>&3)"
 if [[ -z "$pswd" ]]; then
   echo "Error!"
-  exit 2
+  exit 3
 fi
-echo "$username $interface $(hostname) $pswd" > /etc/telescope-pi
+echo "$username $interface $hostname $pswd" > /etc/telescope-pi
 
 systemctl daemon-reload
 systemctl enable ssh
