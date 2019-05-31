@@ -26,6 +26,7 @@ ln -sf /lib/systemd/resolv.conf /etc/resolv.conf
 pip3 install indiweb pybluez wifi sh
 
 rfkill block bluetooth
+systemctl daemon-reload
 systemctl stop bluetooth
 sed -i ':a;N;$!ba;s#ExecStart=/usr/lib/bluetooth/bluetoothd\n#ExecStart=/usr/lib/bluetooth/bluetoothd -C\nExecStartPost=/usr/bin/sdptool add SP\n#g' /etc/systemd/system/dbus-org.bluez.service
 cp /lib/systemd/system/bluetooth.service /etc/systemd/system/bluetooth.service
