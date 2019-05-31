@@ -10,5 +10,5 @@ hostname -F /etc/hostname
 if [[ -n "$(ls /etc/cloud/cloud.cfg 2> /dev/null)" ]]; then
   sed 's/preserve_hostname: false/preserve_hostname: true/' /etc/cloud/cloud.cfg
 fi
-service hostname restart
+service hostname restart 2> /dev/null
 /etc/init.d/networking restart
