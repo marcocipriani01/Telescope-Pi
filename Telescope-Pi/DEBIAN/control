@@ -1,7 +1,7 @@
 Package: Telescope-Pi
 Architecture: all
 Maintainer: marcocipriani01
-Depends: software-properties-common, network-manager, network-manager-gnome, python3-pip, avahi-daemon, python-dev, libbluetooth-dev, bluetooth, bluez, rfkill, openssh-server, ifconfig
+Depends: software-properties-common, network-manager, network-manager-gnome, python3-pip, avahi-daemon, python-dev, libbluetooth-dev, bluetooth, bluez, rfkill, openssh-server, net-tools
 Conflicts: openresolv, dhcpcd5
 Priority: optional
 Version: 2.0
