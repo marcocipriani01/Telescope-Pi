@@ -1,0 +1,49 @@
+#!/bin/bash
+ln -sf /lib/systemd/resolv.conf /etc/resolv.conf
+/etc/init.d/networking restart
+
+pip3 install -y indiweb pybluez wifi sh
+
+rfkill block bluetooth
+systemctl stop bluetooth
+sed -i ':a;N;$!ba;s#ExecStart=/usr/lib/bluetooth/bluetoothd\n#ExecStart=/usr/lib/bluetooth/bluetoothd -C\nExecStartPost=/usr/bin/sdptool add SP\n#g' /etc/systemd/system/dbus-org.bluez.service
+cp /lib/systemd/system/bluetooth.service /etc/systemd/system/bluetooth.service
+sed -i ':a;N;$!ba;s#ExecStart=/usr/lib/bluetooth/bluetoothd\n#ExecStart=/usr/lib/bluetooth/bluetoothd -C\nExecStartPost=/usr/bin/sdptool add SP\n#g' /etc/systemd/system/bluetooth.service
+if [[ -z "$(grep "DisablePlugins = pnat" "/etc/bluetooth/main.conf")" ]]; then
+  echo "DisablePlugins = pnat" | sudo tee -a "/etc/bluetooth/main.conf"
+fi
+sed -i 's#AutoEnable=false#AutoEnable=true#g' /etc/bluetooth/main.conf
+usermod -aG bluetooth "$USER"
+newgrp bluetooth
+cp /usr/share/Telescope-Pi/var-run-sdp.path /etc/systemd/system/var-run-sdp.path
+cp /usr/share/Telescope-Pi/var-run-sdp.service /etc/systemd/system/var-run-sdp.service
+systemctl daemon-reload
+systemctl enable bluetooth
+systemctl enable var-run-sdp.path
+systemctl enable var-run-sdp.service
+systemctl start var-run-sdp.path
+systemctl start bluetooth
+rfkill unblock bluetooth
+sdptool add SP
+
+interfaces=()
+while read -r line; do
+    interfaces+=($line "")
+done <<< "$(list-net-interfaces)"
+interface="$(whiptail --title "Telescope-Pi" --menu "Select a newtwork interface:" 15 50 8 "${interfaces[@]}" 3>&1 1>&2 2>&3)"
+if [[ -z "$interface" ]]; then
+  echo "Error!"
+  exit 1
+fi
+pswd="$(whiptail --title "Telescope-Pi" --inputbox "Enter a password for the hotspot:" 8 70 3>&1 1>&2 2>&3)"
+if [[ -z "$pswd" ]]; then
+  echo "Error!"
+  exit 2
+fi
+echo "$interface $(hostname) $pswd" > /etc/telescope-pi
+
+systemctl daemon-reload
+systemctl enable ssh
+systemctl start ssh
+systemctl enable telescope-pi
+systemctl start telescope-pi

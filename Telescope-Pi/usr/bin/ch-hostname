@@ -1,0 +1,14 @@
+#!/bin/bash
+name="$1"
+if [[ -z "$name" ]]; then
+    echo "Usage: ch-hostname <new hostname>"
+    exit 1
+fi
+hostnamectl set-hostname "$name"
+hostname "$name"
+hostname -F /etc/hostname
+if [[ -n "$(ls /etc/cloud/cloud.cfg 2> /dev/null)" ]]; then
+  sed 's/preserve_hostname: false/preserve_hostname: true/' /etc/cloud/cloud.cfg
+fi
+service hostname restart
+/etc/init.d/networking restart

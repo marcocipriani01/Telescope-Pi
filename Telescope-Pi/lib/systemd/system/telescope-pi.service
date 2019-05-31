@@ -9,7 +9,7 @@ RestartSec=5
 User=pi
 StartLimitBurst=10
 StartLimitIntervalSec=120
-ExecStart=/home/pi/Telescope-Pi/telescope-pi
+ExecStart=telescope-pi
 
 [Install]
 WantedBy=multi-user.target
