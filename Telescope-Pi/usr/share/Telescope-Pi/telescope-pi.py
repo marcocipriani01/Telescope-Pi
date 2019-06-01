@@ -74,7 +74,7 @@ def main():
             bt_send("NetInterface=" + net_interface +
                     "\nWiFi=" + str(wifi_on) +
                     "\nHotspot=" + str(hotspot_enabled) +
-                    "\nINDI=" + str(indiweb not None))
+                    "\nINDI=" + str(indiweb is not None))
             send_ip()
             try:
                 while True:
