@@ -1,8 +1,8 @@
 #!/bin/bash
 interface="$(awk '{print $2}' /etc/telescope-pi)"
-ifconfig "$interface" up
-service bluetooth start
-rfkill unblock bluetooth
-sdptool add SP
+sudo ifconfig "$interface" up
+sudo service bluetooth start
+sudo rfkill unblock bluetooth
+sudo sdptool add SP
 echo "Bluetooth MAC address = $(hciconfig | grep Address | awk '{print $3}')"
-python /usr/share/Telescope-Pi/telescope-pi.py "$(awk '{print $1}' /etc/telescope-pi)" "$interface" "$(awk '{print $3}' /etc/telescope-pi)" "$(awk '{print $4}' /etc/telescope-pi)"
+sudo python /usr/share/Telescope-Pi/telescope-pi.py "$(awk '{print $1}' /etc/telescope-pi)" "$interface" "$(awk '{print $3}' /etc/telescope-pi)" "$(awk '{print $4}' /etc/telescope-pi)"
