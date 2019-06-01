@@ -40,7 +40,7 @@ fi
 echo "Stopping Bluetooth services..."
 rfkill block bluetooth 2> /dev/null
 systemctl daemon-reload
-systemctl stop bluetooth
+systemctl stop bluetooth 2> /dev/null
 systemctl stop var-run-sdp.path 2> /dev/null
 systemctl stop var-run-sdp.service 2> /dev/null
 
@@ -56,7 +56,7 @@ sed -i 's#AutoEnable=false#AutoEnable=true#g' /etc/bluetooth/main.conf
 echo "Adding $username and root to the \"bluetooth\" group..."
 usermod -aG bluetooth "root"
 usermod -aG bluetooth "$username"
-newgrp bluetooth
+# newgrp bluetooth
 
 echo "Looking for available newtwork interfaces..."
 interfaces=()
@@ -86,19 +86,12 @@ sed -i "s/USERNAME/test/g" /lib/systemd/system/openfocuser.service
 systemctl daemon-reload
 
 echo "Starting system services..."
-systemctl enable sshd
-systemctl start sshd
-systemctl enable bluetooth
-systemctl enable var-run-sdp.path
-systemctl enable var-run-sdp.service
-systemctl start bluetooth
-systemctl start var-run-sdp.path
-
-echo "Turning on Bluetooth..."
-rfkill unblock bluetooth
-sdptool add SP
+systemctl enable sshd 2> /dev/null
+systemctl enable bluetooth 2> /dev/null
+systemctl enable var-run-sdp.path 2> /dev/null
+systemctl enable var-run-sdp.service 2> /dev/null
 
 echo "Starting the Telescope-Pi service..."
 systemctl enable telescope-pi
-systemctl start telescope-pi
 echo "Done. Telescope-Pi configured successfully."
+echo "Please restart your Raspberry Pi to apply all the changes!"
