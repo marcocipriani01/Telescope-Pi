@@ -12,3 +12,4 @@ if [[ -n "$(ls /etc/cloud/cloud.cfg 2> /dev/null)" ]]; then
 fi
 service hostname restart 2> /dev/null
 /etc/init.d/networking restart
+echo "Done. Hostname set to $name"

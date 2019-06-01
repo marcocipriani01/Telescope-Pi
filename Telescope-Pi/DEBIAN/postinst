@@ -1,11 +1,20 @@
 #!/bin/bash
+echo "Stopping old services..."
+systemctl stop telescope-pi 2> /dev/null
+systemctl stop openfocuser 2> /dev/null
+
+echo "Updating network configuration..."
+ln -sf /lib/systemd/resolv.conf /etc/resolv.conf
+
 hostname="$(whiptail --title "Telescope-Pi" --inputbox "Enter a hostname for this device:" 8 70 3>&1 1>&2 2>&3)"
 if [[ -z "$hostname" ]]; then
     echo "Error!"
     exit 1
 fi
-ch-hostname "$hostname"
+echo "Setting hostname to $hostname..."
+/usr/bin/ch-hostname "$hostname"
 
+echo "Looking for users in /etc/passwd..."
 index=0
 while IFS= read -r line
 do
@@ -15,19 +24,27 @@ do
   index=$((index+1))
 done < "/etc/passwd"
 username="$(whiptail --title "Telescope-Pi"  --menu "Telescope-Pi must run the INDI Web Manager as a non-root user. Choose your user in this list:" 25 78 15 "${users[@]}" 3>&1 1>&2 2>&3)"
+echo "Username set to $username"
 if [[ -z "$username" ]]; then
     echo "Error!"
     exit 2
 fi
 
-ln -sf /lib/systemd/resolv.conf /etc/resolv.conf
-/etc/init.d/networking restart
-
+echo "Installing python packages..."
 pip3 install indiweb pybluez wifi sh
+if [[ "$?" != "0" ]]; then
+  echo "Error!"
+  exit 3
+fi
 
-rfkill block bluetooth
+echo "Stopping Bluetooth services..."
+rfkill block bluetooth 2> /dev/null
 systemctl daemon-reload
 systemctl stop bluetooth
+systemctl stop var-run-sdp.path 2> /dev/null
+systemctl stop var-run-sdp.service 2> /dev/null
+
+echo "Updating Bluetooth configuration..."
 sed -i ':a;N;$!ba;s#ExecStart=/usr/lib/bluetooth/bluetoothd\n#ExecStart=/usr/lib/bluetooth/bluetoothd -C\nExecStartPost=/usr/bin/sdptool add SP\n#g' /etc/systemd/system/dbus-org.bluez.service
 cp /lib/systemd/system/bluetooth.service /etc/systemd/system/bluetooth.service
 sed -i ':a;N;$!ba;s#ExecStart=/usr/lib/bluetooth/bluetoothd\n#ExecStart=/usr/lib/bluetooth/bluetoothd -C\nExecStartPost=/usr/bin/sdptool add SP\n#g' /etc/systemd/system/bluetooth.service
@@ -35,34 +52,53 @@ if [[ -z "$(grep "DisablePlugins = pnat" "/etc/bluetooth/main.conf")" ]]; then
   echo "DisablePlugins = pnat" | sudo tee -a "/etc/bluetooth/main.conf"
 fi
 sed -i 's#AutoEnable=false#AutoEnable=true#g' /etc/bluetooth/main.conf
-usermod -aG bluetooth "$USER"
+
+echo "Adding $username and root to the \"bluetooth\" group..."
+usermod -aG bluetooth "root"
+usermod -aG bluetooth "$username"
 newgrp bluetooth
 
+echo "Looking for available newtwork interfaces..."
 interfaces=()
 while read -r line; do
     interfaces+=($line "")
-done <<< "$(list-net-interfaces)"
-interface="$(whiptail --title "Telescope-Pi" --menu "Select a newtwork interface:" 15 50 8 "${interfaces[@]}" 3>&1 1>&2 2>&3)"
+done <<< "$(/usr/bin/list-net-interfaces)"
+interface="$(whiptail --title "Telescope-Pi" --menu "Please, select your Wi-Fi newtork interface:" 15 50 8 "${interfaces[@]}" 3>&1 1>&2 2>&3)"
 if [[ -z "$interface" ]]; then
   echo "Error!"
-  exit 1
+  exit 4
 fi
+
 pswd="$(whiptail --title "Telescope-Pi" --inputbox "Enter a password for the hotspot:" 8 70 3>&1 1>&2 2>&3)"
 if [[ -z "$pswd" ]]; then
   echo "Error!"
-  exit 3
+  exit 5
 fi
+
+echo "Saving configuration... to /etc/telescope-pi"
 echo "$username $interface $hostname $pswd" > /etc/telescope-pi
 
+echo "Setting wallpaper..."
+pcmanfm --set-wallpaper "/usr/share/wallpapers/Telescope-Pi/Telescope-Pi.jpg"
+
+echo "Updating services..."
+sed -i "s/USERNAME/test/g" /lib/systemd/system/openfocuser.service
 systemctl daemon-reload
-systemctl enable ssh
-systemctl start ssh
+
+echo "Starting system services..."
+systemctl enable sshd
+systemctl start sshd
 systemctl enable bluetooth
 systemctl enable var-run-sdp.path
 systemctl enable var-run-sdp.service
-systemctl start var-run-sdp.path
 systemctl start bluetooth
+systemctl start var-run-sdp.path
+
+echo "Turning on Bluetooth..."
 rfkill unblock bluetooth
 sdptool add SP
+
+echo "Starting the Telescope-Pi service..."
 systemctl enable telescope-pi
 systemctl start telescope-pi
+echo "Done. Telescope-Pi configured successfully."

@@ -6,7 +6,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=5
-User=pi
+User=USERNAME
 StartLimitBurst=10
 StartLimitIntervalSec=120
 ExecStart=/usr/bin/openfocuser -p=0
