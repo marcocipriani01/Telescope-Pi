@@ -79,7 +79,7 @@ echo "Saving configuration... to /etc/telescope-pi"
 echo "$username $interface $hostname $pswd" > /etc/telescope-pi
 
 echo "Setting wallpaper..."
-pcmanfm --set-wallpaper "/usr/share/wallpapers/Telescope-Pi/Telescope-Pi.jpg"
+DISPLAY=:0.0 pcmanfm --set-wallpaper "/usr/share/wallpapers/Telescope-Pi/Telescope-Pi.jpg"
 
 echo "Updating services..."
 sed -i "s/USERNAME/test/g" /lib/systemd/system/openfocuser.service
