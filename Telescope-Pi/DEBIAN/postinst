@@ -63,7 +63,7 @@ interfaces=()
 while read -r line; do
     interfaces+=($line "")
 done <<< "$(/usr/bin/list-net-interfaces)"
-interface="$(whiptail --title "Telescope-Pi" --menu "Please, select your Wi-Fi newtork interface:" 15 50 8 "${interfaces[@]}" 3>&1 1>&2 2>&3)"
+interface="$(whiptail --title "Telescope-Pi" --menu "Please, select your Wi-Fi newtork interface:" 20 60 12 "${interfaces[@]}" 3>&1 1>&2 2>&3)"
 if [[ -z "$interface" ]]; then
   echo "Error!"
   exit 4
