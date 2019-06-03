@@ -1,10 +1,19 @@
 # Telescope-Pi
 
-Telescope-Pi is the name I gave to the Raspberry Pi 3 B+ I use to remotely control my telescope. This project contains an installer that will guide the user while downloading and configuring all the INDI drivers and software needed to control CCDs, DSLRs and telescope mounts. Moreover, a Bluetooth service is installed: if you are away from known Wi-Fi network, you can use its Android app to connect the board to another access point or even start the hotspot mode, ideal if you are, for instance, in a trip far from light pollution. The service will also start the Indi Web Manager (and the OpenFocuser server if installed) at startup, while the system service manager (systemd) will check if something suddenly crashed: if the server crashes, it is automatically restarted. No programming competencies are required to install the software because the installation scripts are completely automated and will even fix common Raspberry issues (e.g. Bluez and Rfcomm). When configured, just turn on the board (no mouse, keyboard or screen required), use the app to connect to a Wi-Fi AP and then remotely manage the telescope!
+Telescope-Pi is a Debian package intended to be installed in a Raspberry Pi 3B+ (Raspbian **only**) to make the board become a perfect remote computer for astronomical use: use it to manage the telescope, the CCD, the DSLR, the focuser and the mount remotely! It allows the end user to control the Raspberry Pi's newtwork, start/stop the hotspot (that is fully configurable during the installation process), control the INDI Web Manager, shutdown and reboot the system. Management is made using an Android app and Bluetooth, so one don't have to attach a keyboard and a screen to the Raspberry Pi on the field anymore. `dpkg` will guide you installing and configuring the Telescope-Pi service: you'll be asked a hostname, a wireless network interface and a password for the hotspot; then simply reboot the board and connect to it using the Android App. You'll be ready to connect to it from a remote computer using an INDI client.
 
-### Usage and description
+## To do before installing
 
-Behind the scenes, it's an Indi Web Manager starter/stopper, network and power manager Bluetooth service for Raspberry Pi (Raspbian only, tested on 3 B+). Installers in the `install-kit` folder will guide you through updating the system, installing, configuring and starting the server and its dependencies, just run them in the correct order. If you don't need OpenFocuser, script 4 can be skipped without problems. You'll be asked for a hostname for the server, a password for the hotspot mode and the network interface to control via Bluetooth. INDI and bluez will be downloaded/updated automatically and common troubles about Bluetooth in Raspbian will be fixed. Then some systemd services will be set up to correctly start the Bluetooth controller and indiserver.
+Of course, you'll need to install INDI **before** installing this package, otherwise something may go wrong during the installation process. To do that, please use the `./install-indi.sh` script.
 
-### Android app
-I'm still working on a good Android app for Telescope-Pi. In the meanwhile, you can use a Bluetooth serial terminal app (in this way, it should work even with iPhones or desktop Bluetooth terminals, but I've never tested it in these ways): just connect to the board and all the available commands will be listed. Chose an option by sending a number and start controlling your Raspberry!
+## Dependencies
+
+This package depends on `nmcli`, so it will **remove** Raspbian's default newtork manager. Moreover, it will also install `openssh-server`, `avahi-daemon` (to make the Raspberry Pi be detected over the newtork without knowing its IP address), `net-tools`, `bluez` and some Python 3 packages (required for managing Bluetooth & newtork).
+
+## Compiling
+
+Simply run `./build.sh` on your computer and then install `Telescope-Pi.deb` on your Raspberry Pi. Enjoy!
+
+## The Android App
+
+Simple and essential. User-friendly and lightweight. Developed with Android Studio.

@@ -74,6 +74,8 @@ def main():
             bt_send("NetInterface=" + net_interface +
                     "\nWiFi=" + str(wifi_on) +
                     "\nHotspot=" + str(hotspot_enabled) +
+                    "\nHotspotSSID=" + hotspotssid" +
+                    "\nHotspotPswdType=WPA\nHotspotPswd=" + hotspotpswd +
                     "\nINDI=" + str(indiweb is not None))
             send_ip()
             try:
@@ -109,7 +111,7 @@ def parse_rfcomm(line):
     global net_scan
     global wifi_on
     if type_pswd is True:
-        bt_send("Busy=Connecting to Wi-Fi")
+        bt_send("Busy=Connecting to Wi-Fi AP " + ap)
         try:
             print(str(nmcli("device", "wifi", "connect", ap, "password", line)))
             send_ip()
@@ -119,8 +121,17 @@ def parse_rfcomm(line):
     else:
         if len(line) == 2:
             if line == "01":
-                start_hotspot()
+                try:
+                    print(str(nmcli("radio", "wifi", "off")))
+                    bt_send("WiFi=False")
+                    wifi_on = False
+                except ErrorReturnCode:
+                    log_err("Unable to turn off Wi-Fi!")
             elif line == "02":
+                turn_on_wifi()
+            elif line == "03":
+                start_hotspot()
+            elif line == "04":
                 bt_send("Busy=Stopping hotspot...")
                 try:
                     print(str(nmcli("connection", "down", hotspotssid)))
@@ -128,9 +139,9 @@ def parse_rfcomm(line):
                     bt_send("Hotspot=False")
                 except ErrorReturnCode:
                     log_err("Unable to stop the hotspot!")
-            elif line == "03":
+            elif line == "05":
                 send_ip()
-            elif line == "04":
+            elif line == "06":
                 bt_send("Busy=Looking for Wi-Fi access points...")
                 try:
                     net_scan = Cell.all(net_interface)
@@ -145,25 +156,13 @@ def parse_rfcomm(line):
                     bt_send(list + "]")
                 except InterfaceError:
                     log_err("Unable to scan!")
-            elif line == '05':
+            elif line == '07':
                 log("Shutting down...")
                 shutdown("now")
-            elif line == '06':
+            elif line == '08':
                 log("Rebooting...")
                 reboot("now")
             elif line[0] == '1':
-                if line[1] == '0':
-                    try:
-                        print(str(nmcli("radio", "wifi", "off")))
-                        bt_send("WiFi=False")
-                        wifi_on = False
-                    except ErrorReturnCode:
-                        log_err("Unable to turn off Wi-Fi!")
-                elif line[1] == '1':
-                    turn_on_wifi()
-                else:
-                    log_err("Invalid command!")
-            elif line[0] == '2':
                 if 0 <= index < len(net_scan):
                     ap = str(net_scan[index].ssid)
                     bt_send("Busy=Connecting to Wi-Fi AP " + ap)
@@ -261,8 +260,7 @@ def start_hotspot():
                         "ssid", hotspotssid, "band", "bg", "password",
                         hotspotpswd)).replace("\n", ""))
         hotspot_enabled = True
-        bt_send("Hotspot=True\nHotspotSSID=" + hotspotssid +
-                "\nHotspotPswdType=WPA\nHotspotPswd=" + hotspotpswd)
+        bt_send("Hotspot=True")
     except ErrorReturnCode:
         log_err("Unable to start the hotspot!")
 
