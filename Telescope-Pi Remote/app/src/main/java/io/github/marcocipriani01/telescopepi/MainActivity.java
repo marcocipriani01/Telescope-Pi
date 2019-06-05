@@ -28,10 +28,10 @@ public class MainActivity extends AppCompatActivity implements BluetoothHelper.B
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (true) {
+        /*if (true) {
             startActivity(new Intent(this, ManagerActivity.class));
             return;
-        }
+        }*/
 
         setContentView(R.layout.activity_main);
         setSupportActionBar(this.<Toolbar>findViewById(R.id.main_toolbar));

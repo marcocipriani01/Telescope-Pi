@@ -74,7 +74,7 @@ def main():
             bt_send("NetInterface=" + net_interface +
                     "\nWiFi=" + str(wifi_on) +
                     "\nHotspot=" + str(hotspot_enabled) +
-                    "\nHotspotSSID=" + hotspotssid" +
+                    "\nHotspotSSID=" + hotspotssid +
                     "\nHotspotPswdType=WPA\nHotspotPswd=" + hotspotpswd +
                     "\nINDI=" + str(indiweb is not None))
             send_ip()

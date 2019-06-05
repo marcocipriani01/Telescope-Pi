@@ -52,7 +52,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
             telescopePiApp.bluetooth.addListener(this);
 
         } else {
-            //throw new IllegalStateException("Not connected!");
+            throw new IllegalStateException("Not connected!");
         }
 
         errorDialog = new AlertDialog.Builder(this);
