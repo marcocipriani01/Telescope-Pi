@@ -243,7 +243,7 @@ def bt_send(message):
     """
     global client_sock
     if client_sock is not None:
-        client_sock.send(message + "#")
+        client_sock.send(message + "\n")
 
 
 def start_hotspot():

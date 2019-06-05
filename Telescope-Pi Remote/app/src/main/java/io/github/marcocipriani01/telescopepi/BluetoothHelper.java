@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -174,34 +175,14 @@ public class BluetoothHelper {
 
     private class ReceiveThread extends Thread implements Runnable {
 
-        StringBuilder buffer = new StringBuilder();
-
         @Override
         public void run() {
             String message;
             try {
                 while ((message = input.readLine()) != null) {
-                    buffer.append(message);
-                    if (buffer.indexOf("#") >= 0) {
-                        String bb = buffer.toString();
-                        String[] ba = bb.split("#");
-                        if (bb.endsWith("#")) {
-                            for (String s : ba) {
-                                for (BluetoothListener listener : listeners) {
-                                    listener.onMessage(s);
-                                }
-                            }
-
-                        } else {
-                            for (int i = 0; i < ba.length - 1; i++) {
-                                for (BluetoothListener listener : listeners) {
-                                    listener.onMessage(ba[i]);
-                                }
-                            }
-                        }
+                    for (BluetoothListener listener : listeners) {
+                        listener.onMessage(message);
                     }
-
-
                 }
 
             } catch (IOException e) {

@@ -3,6 +3,7 @@ package io.github.marcocipriani01.telescopepi;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -50,6 +51,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
 
         if (telescopePiApp != null && telescopePiApp.bluetooth != null && telescopePiApp.bluetooth.isConnected()) {
             telescopePiApp.bluetooth.addListener(this);
+            Log.e(TelescopePiApp.TAG, "Bluetooth listener OK");
 
         } else {
             throw new IllegalStateException("Not connected!");
@@ -77,6 +79,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
         super.onDestroy();
         if (telescopePiApp != null && telescopePiApp.bluetooth != null) {
             telescopePiApp.bluetooth.removeListener(this);
+            Log.e(TelescopePiApp.TAG, "Bluetooth listener removed");
         }
     }
 
@@ -100,18 +103,22 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
 
     public void shutdown(View v) {
         telescopePiApp.bluetooth.send("07");
+        Log.e(TelescopePiApp.TAG, "Shutdown");
     }
 
     public void reboot(View v) {
         telescopePiApp.bluetooth.send("08");
+        Log.e(TelescopePiApp.TAG, "Reboot");
     }
 
     public void askIP(View v) {
         telescopePiApp.bluetooth.send("05");
+        Log.e(TelescopePiApp.TAG, "IP");
     }
 
     @Override
     public void onMessage(final String message) {
+        Log.e(TelescopePiApp.TAG, "Received " + message);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
