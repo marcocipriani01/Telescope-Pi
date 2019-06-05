@@ -1,4 +1,4 @@
-package io.github.marcocipriani01.telescopepi.remote;
+package io.github.marcocipriani01.telescopepi;
 
 import android.app.Application;
 import android.bluetooth.BluetoothDevice;

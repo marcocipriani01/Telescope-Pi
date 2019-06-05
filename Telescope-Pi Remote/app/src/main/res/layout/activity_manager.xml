@@ -5,7 +5,7 @@
     android:id="@+id/manager_coordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".remote.ManagerActivity">
+    tools:context=".ManagerActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -19,12 +19,21 @@
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
+        <ProgressBar
+            android:id="@+id/manager_progressbar"
+            style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-7dp"
+            android:layout_marginBottom="-7dp"
+            android:indeterminate="true"
+            android:visibility="gone" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <include layout="@layout/content_manger" />
     </androidx.core.widget.NestedScrollView>

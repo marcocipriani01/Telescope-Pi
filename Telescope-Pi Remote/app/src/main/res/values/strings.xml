@@ -47,4 +47,6 @@
     <string name="power_management">Power management:</string>
     <string name="indi_management">INDI Management:</string>
     <string name="network_management">Network management:</string>
+    <string name="network_interface">Network interface:</string>
+    <string name="select_ap_dialog_title">Select a Wi-Fi AP:</string>
 </resources>

@@ -10,15 +10,33 @@
     android:layout_marginBottom="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".remote.ManagerActivity"
+    tools:context=".ManagerActivity"
     tools:showIn="@layout/activity_manager">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/components_margin"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:text="@string/network_management"/>
+        android:text="@string/network_management"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/components_margin"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/network_interface" />
+
+        <TextView
+            android:id="@+id/net_interface_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/unknown" />
+    </LinearLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -52,6 +70,7 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:contentDescription="@string/refresh"
+            android:onClick="askIP"
             android:src="@drawable/refresh" />
     </RelativeLayout>
 
@@ -62,10 +81,11 @@
         android:text="@string/wifi" />
 
     <Button
+        android:id="@+id/net_selection_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/select_network"
-        android:layout_marginBottom="@dimen/components_margin" />
+        android:layout_marginBottom="@dimen/components_margin"
+        android:text="@string/select_network" />
 
     <Switch
         android:id="@+id/hotspot_switch"
@@ -74,45 +94,48 @@
         android:text="@string/hotspot" />
 
     <Button
+        android:id="@+id/hotspot_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/connect_hotspot"
-        android:layout_marginBottom="@dimen/components_margin" />
+        android:layout_marginBottom="@dimen/components_margin"
+        android:text="@string/connect_hotspot" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/components_margin"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:text="@string/indi_management"/>
+        android:text="@string/indi_management"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <Switch
         android:id="@+id/indi_web_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/indi_web_manager"
-        android:layout_marginBottom="@dimen/components_margin" />
+        android:layout_marginBottom="@dimen/components_margin"
+        android:text="@string/indi_web_manager" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/components_margin"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:text="@string/power_management"/>
+        android:text="@string/power_management"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <ImageButton
         android:id="@+id/shutdown_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/shutdown"
         android:layout_marginBottom="@dimen/components_margin"
-        android:contentDescription="@string/shutdown" />
+        android:contentDescription="@string/shutdown"
+        android:onClick="shutdown"
+        android:src="@drawable/shutdown" />
 
     <ImageButton
-        android:id="@+id/restart_button"
+        android:id="@+id/reboot_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:contentDescription="@string/reboot"
+        android:onClick="reboot"
         android:src="@drawable/restart" />
 
 </LinearLayout>

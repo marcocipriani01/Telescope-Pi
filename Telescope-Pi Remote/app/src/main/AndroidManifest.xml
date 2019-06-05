@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
-        android:name=".remote.TelescopePiApp"
+        android:name=".TelescopePiApp"
         android:allowBackup="true"
         android:icon="@mipmap/app_icon"
         android:label="@string/app_name"
@@ -15,16 +15,16 @@
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".remote.AboutActivity"
+            android:name=".AboutActivity"
             android:label="@string/about_activity_title"
-            android:parentActivityName=".remote.MainActivity"
+            android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="io.github.marcocipriani01.telescopepi.remote.MainActivity" />
+                android:value="io.github.marcocipriani01.telescopepi.MainActivity" />
         </activity>
         <activity
-            android:name=".remote.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -35,7 +35,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".remote.ManagerActivity"
+            android:name=".ManagerActivity"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>
 

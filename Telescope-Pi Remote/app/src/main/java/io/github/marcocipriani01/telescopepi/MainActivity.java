@@ -1,4 +1,4 @@
-package io.github.marcocipriani01.telescopepi.remote;
+package io.github.marcocipriani01.telescopepi;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
@@ -17,8 +17,6 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import io.github.marcocipriani01.telescopepi.R;
-
 public class MainActivity extends AppCompatActivity implements BluetoothHelper.BluetoothListener {
 
     private static boolean btEnabledOnCreate = false;
@@ -29,6 +27,12 @@ public class MainActivity extends AppCompatActivity implements BluetoothHelper.B
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (true) {
+            startActivity(new Intent(this, ManagerActivity.class));
+            return;
+        }
+
         setContentView(R.layout.activity_main);
         setSupportActionBar(this.<Toolbar>findViewById(R.id.main_toolbar));
 
@@ -157,5 +161,6 @@ public class MainActivity extends AppCompatActivity implements BluetoothHelper.B
 
                     }
                 });
+        errorDialog.show();
     }
 }

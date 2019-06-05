@@ -1,4 +1,4 @@
-package io.github.marcocipriani01.telescopepi.remote;
+package io.github.marcocipriani01.telescopepi;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -174,14 +174,34 @@ public class BluetoothHelper {
 
     private class ReceiveThread extends Thread implements Runnable {
 
+        StringBuilder buffer = new StringBuilder();
+
         @Override
         public void run() {
             String message;
             try {
                 while ((message = input.readLine()) != null) {
-                    for (BluetoothListener listener : listeners) {
-                        listener.onMessage(message);
+                    buffer.append(message);
+                    if (buffer.indexOf("#") >= 0) {
+                        String bb = buffer.toString();
+                        String[] ba = bb.split("#");
+                        if (bb.endsWith("#")) {
+                            for (String s : ba) {
+                                for (BluetoothListener listener : listeners) {
+                                    listener.onMessage(s);
+                                }
+                            }
+
+                        } else {
+                            for (int i = 0; i < ba.length - 1; i++) {
+                                for (BluetoothListener listener : listeners) {
+                                    listener.onMessage(ba[i]);
+                                }
+                            }
+                        }
                     }
+
+
                 }
 
             } catch (IOException e) {
