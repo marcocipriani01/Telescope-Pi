@@ -184,10 +184,10 @@ def parse_rfcomm(line):
                     print("Received: \"" + line + "\"")
                     log_err("Invalid command!")
             else:
-                print("Received: \"" + line + \")
+                print("Received: \"" + line + "\"")
                 log_err("Invalid command!")
         else:
-            print("Received: \"" + line + \")
+            print("Received: \"" + line + "\"")
             log_err("Invalid command!")
 
 
