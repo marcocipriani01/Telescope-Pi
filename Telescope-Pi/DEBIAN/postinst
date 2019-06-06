@@ -1,4 +1,50 @@
 #!/bin/bash
+function create_config {
+  hostname="$(whiptail --title "Telescope-Pi" --inputbox "Enter a hostname for this device:" 8 70 3>&1 1>&2 2>&3)"
+  if [[ -z "$hostname" ]]; then
+      echo "Error!"
+      exit 1
+  fi
+  echo "Setting hostname to $hostname..."
+  /usr/bin/ch-hostname "$hostname"
+
+  echo "Looking for available newtwork interfaces..."
+  interfaces=()
+  while read -r line; do
+      interfaces+=($line "")
+  done <<< "$(/usr/bin/list-net-interfaces)"
+  interface="$(whiptail --title "Telescope-Pi" --menu "Please, select your Wi-Fi newtork interface:" 20 60 12 "${interfaces[@]}" 3>&1 1>&2 2>&3)"
+  if [[ -z "$interface" ]]; then
+    echo "Error!"
+    exit 2
+  fi
+
+  echo "Looking for users in /etc/passwd..."
+  index=0
+  while IFS= read -r line
+  do
+    users[index]="${line%%:*}"
+    index=$((index+1))
+    users[index]=""
+    index=$((index+1))
+  done < "/etc/passwd"
+  username="$(whiptail --title "Telescope-Pi"  --menu "Telescope-Pi must run the INDI Web Manager as a non-root user. Choose your user in this list:" 25 78 15 "${users[@]}" 3>&1 1>&2 2>&3)"
+  echo "Username set to $username"
+  if [[ -z "$username" ]]; then
+      echo "Error!"
+      exit 3
+  fi
+
+  pswd="$(whiptail --title "Telescope-Pi" --inputbox "Enter a password for the hotspot:" 8 70 3>&1 1>&2 2>&3)"
+  if [[ -z "$pswd" ]]; then
+    echo "Error!"
+    exit 4
+  fi
+
+  echo "Saving configuration... to /etc/telescope-pi"
+  echo "$username $interface $hostname $pswd" > /etc/telescope-pi
+}
+
 echo "Stopping old services..."
 systemctl stop telescope-pi 2> /dev/null
 systemctl stop openfocuser 2> /dev/null
@@ -6,35 +52,27 @@ systemctl stop openfocuser 2> /dev/null
 echo "Updating network configuration..."
 ln -sf /lib/systemd/resolv.conf /etc/resolv.conf
 
-hostname="$(whiptail --title "Telescope-Pi" --inputbox "Enter a hostname for this device:" 8 70 3>&1 1>&2 2>&3)"
-if [[ -z "$hostname" ]]; then
-    echo "Error!"
-    exit 1
+if [[ -f "/etc/telescope-pi" ]]; then
+  if (whiptail --title "Telescope-Pi" --yesno "Configuration files found. Keep using them?" 8 78); then
+    echo "Using old configuration files..."
+  else
+    create_config
+  fi
+else
+  create_config
 fi
-echo "Setting hostname to $hostname..."
-/usr/bin/ch-hostname "$hostname"
 
-echo "Looking for users in /etc/passwd..."
-index=0
-while IFS= read -r line
-do
-  users[index]="${line%%:*}"
-  index=$((index+1))
-  users[index]=""
-  index=$((index+1))
-done < "/etc/passwd"
-username="$(whiptail --title "Telescope-Pi"  --menu "Telescope-Pi must run the INDI Web Manager as a non-root user. Choose your user in this list:" 25 78 15 "${users[@]}" 3>&1 1>&2 2>&3)"
-echo "Username set to $username"
+username="$(awk '{print $1}' /etc/telescope-pi)"
 if [[ -z "$username" ]]; then
     echo "Error!"
-    exit 2
+    exit 3
 fi
 
 echo "Installing python packages..."
 pip3 install indiweb pybluez wifi sh
 if [[ "$?" != "0" ]]; then
   echo "Error!"
-  exit 3
+  exit 5
 fi
 
 echo "Stopping Bluetooth services..."
@@ -56,33 +94,12 @@ sed -i 's#AutoEnable=false#AutoEnable=true#g' /etc/bluetooth/main.conf
 echo "Adding $username and root to the \"bluetooth\" group..."
 usermod -aG bluetooth "root"
 usermod -aG bluetooth "$username"
-# newgrp bluetooth
-
-echo "Looking for available newtwork interfaces..."
-interfaces=()
-while read -r line; do
-    interfaces+=($line "")
-done <<< "$(/usr/bin/list-net-interfaces)"
-interface="$(whiptail --title "Telescope-Pi" --menu "Please, select your Wi-Fi newtork interface:" 20 60 12 "${interfaces[@]}" 3>&1 1>&2 2>&3)"
-if [[ -z "$interface" ]]; then
-  echo "Error!"
-  exit 4
-fi
-
-pswd="$(whiptail --title "Telescope-Pi" --inputbox "Enter a password for the hotspot:" 8 70 3>&1 1>&2 2>&3)"
-if [[ -z "$pswd" ]]; then
-  echo "Error!"
-  exit 5
-fi
-
-echo "Saving configuration... to /etc/telescope-pi"
-echo "$username $interface $hostname $pswd" > /etc/telescope-pi
 
 echo "Setting wallpaper..."
 DISPLAY=:0.0 pcmanfm --set-wallpaper "/usr/share/wallpapers/Telescope-Pi/Telescope-Pi.jpg"
 
 echo "Updating services..."
-sed -i "s/USERNAME/test/g" /lib/systemd/system/openfocuser.service
+sed -i "s/USERNAME/$username/g" /lib/systemd/system/openfocuser.service
 systemctl daemon-reload
 
 echo "Starting system services..."
