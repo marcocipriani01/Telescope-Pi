@@ -35,6 +35,8 @@
             android:id="@+id/net_interface_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginLeft="4dp"
             android:text="@string/unknown" />
     </LinearLayout>
 
@@ -81,10 +83,11 @@
         android:text="@string/wifi" />
 
     <Button
-        android:id="@+id/net_selection_button"
+        android:id="@+id/wifi_connect_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/components_margin"
+        android:onClick="connectWiFi"
         android:text="@string/select_network" />
 
     <Switch
@@ -98,6 +101,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/components_margin"
+        android:onClick="connectHotspot"
         android:text="@string/connect_hotspot" />
 
     <TextView

@@ -111,13 +111,14 @@ def parse_rfcomm(line):
     global net_scan
     global wifi_on
     if type_pswd is True:
-        bt_send("Busy=Connecting to Wi-Fi AP " + ap)
-        try:
-            print(str(nmcli("device", "wifi", "connect", ap, "password", line)))
-            send_ip()
-        except ErrorReturnCode:
-            log_err("Unable to connect!")
         type_pswd = False
+        if line != "#":
+            bt_send("Busy=Connecting to Wi-Fi AP " + ap)
+            try:
+                print(str(nmcli("device", "wifi", "connect", ap, "password", line)))
+                send_ip()
+            except ErrorReturnCode:
+                log_err("Unable to connect!")
     else:
         if len(line) == 2:
             if line == "01":
@@ -145,15 +146,14 @@ def parse_rfcomm(line):
                 bt_send("Busy=Looking for Wi-Fi access points...")
                 try:
                     net_scan = Cell.all(net_interface)
-                    net_scan.sort(key=get_ap_quality)
-                    list = "WiFiAPs=["
-                    index = 0
-                    for el in net_scan:
-                        list = list + ", " + el.ssid + "(" + el.quality + ")"
-                        index = index + 1
-                        if index == 9:
-                            break
-                    bt_send(list + "]")
+                    if len(net_scan) == 0:
+                        bt_send("WiFiAPs=[]")
+                    else:
+                        net_scan.sort(key=get_ap_quality)
+                        list = "WiFiAPs=[" + net_scan[0].ssid + "(" + net_scan[0].quality + ")"
+                        for i in range(1, min(len(list), 10)):
+                            list = list + ", " + net_scan[i].ssid + "(" + net_scan[i].quality + ")"
+                        bt_send(list + "]")
                 except InterfaceError:
                     log_err("Unable to scan!")
             elif line == '07':

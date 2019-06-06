@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Telescope-Pi Remote</string>
     <string name="action_settings">Settings</string>
-    <string name="dialog_OK">Got it</string>
+    <string name="dialog_accept">Got it</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="connected">Connected</string>
     <string name="disconnected">"Disconnected"</string>
@@ -49,4 +49,7 @@
     <string name="network_management">Network management:</string>
     <string name="network_interface">Network interface:</string>
     <string name="select_ap_dialog_title">Select a Wi-Fi AP:</string>
+    <string name="type_pswd_msg">Type password for Wi-Fi AP \"</string>
+    <string name="ok">OK</string>
+    <string name="no_wifi_aps">No Wi-Fi APs detected</string>
 </resources>

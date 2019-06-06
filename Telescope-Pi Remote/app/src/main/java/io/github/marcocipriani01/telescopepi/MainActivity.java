@@ -17,7 +17,9 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-public class MainActivity extends AppCompatActivity implements BluetoothHelper.BluetoothListener {
+import static io.github.marcocipriani01.telescopepi.TelescopePiApp.INTENT_DEVICE;
+
+public class MainActivity extends AppCompatActivity {
 
     private static boolean btEnabledOnCreate = false;
     private AlertDialog.Builder errorDialog;
@@ -27,11 +29,6 @@ public class MainActivity extends AppCompatActivity implements BluetoothHelper.B
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        /*if (true) {
-            startActivity(new Intent(this, ManagerActivity.class));
-            return;
-        }*/
 
         setContentView(R.layout.activity_main);
         setSupportActionBar(this.<Toolbar>findViewById(R.id.main_toolbar));
@@ -54,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements BluetoothHelper.B
         // Bluetooth
         try {
             telescopePiApp.initBluetooth();
-            telescopePiApp.bluetooth.addListener(this);
             if (telescopePiApp.bluetooth.isBluetoothOn()) {
                 showList();
 
@@ -64,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothHelper.B
 
         } catch (UnsupportedOperationException e) {
             errorDialog.setMessage(getApplicationContext().getString(R.string.error_unsupported));
-            errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_OK),
+            errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_accept),
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -87,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements BluetoothHelper.B
 
             } else {
                 errorDialog.setMessage(R.string.bluetooth_must_be_enabled);
-                errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_OK),
+                errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_accept),
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -110,8 +106,9 @@ public class MainActivity extends AppCompatActivity implements BluetoothHelper.B
             btDevicesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Log.e(TelescopePiApp.TAG, "Selected: " + pairedDevices[position].getName());
-                    telescopePiApp.connect(pairedDevices[position]);
+                    Intent intent = new Intent(MainActivity.this, ManagerActivity.class);
+                    intent.putExtra(INTENT_DEVICE, pairedDevices[position].getName());
+                    startActivity(intent);
                 }
             });
 
@@ -124,43 +121,9 @@ public class MainActivity extends AppCompatActivity implements BluetoothHelper.B
     protected void onDestroy() {
         super.onDestroy();
         if (telescopePiApp != null && telescopePiApp.bluetooth != null) {
-            telescopePiApp.bluetooth.removeListener(this);
             if (btEnabledOnCreate) {
                 telescopePiApp.bluetooth.disableBluetooth();
             }
         }
-    }
-
-    @Override
-    public void onConnection(BluetoothDevice device) {
-        startActivity(new Intent(MainActivity.this, ManagerActivity.class));
-    }
-
-    @Override
-    public void onDisconnection(BluetoothDevice device) {
-
-    }
-
-    @Override
-    public void onMessage(String message) {
-
-    }
-
-    @Override
-    public void onError(String message) {
-
-    }
-
-    @Override
-    public void onConnectionError(BluetoothDevice device, String message) {
-        errorDialog.setMessage(R.string.connection_error);
-        errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_OK),
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                });
-        errorDialog.show();
     }
 }

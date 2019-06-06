@@ -6,7 +6,7 @@
 - IP=`IP address`
 - Hotspot=`True/False`
 - HotspotSSID=`hotspot SSID`
-- HotspotPswdType=`WPA/WEP`
+- HotspotPswdType=`WPA/WEP/None`
 - HotspotPswd=`hotspot password`
 - INDI=`True/False`
 

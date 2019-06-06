@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -63,24 +62,28 @@ public class BluetoothHelper {
         }
     }
 
-    public void connectToAddress(String address) {
+    public void connect(String address) {
         if (address == null) {
-            throw new NullPointerException("Null Bluetooth address");
+            throw new NullPointerException("Null Bluetooth address!");
         }
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
         new ConnectThread(device).start();
     }
 
-    public void connectToName(String name) {
-        for (BluetoothDevice blueDevice : bluetoothAdapter.getBondedDevices()) {
-            if (blueDevice.getName().equals(name)) {
-                connectToAddress(blueDevice.getAddress());
+    public void connectWithName(String name) {
+        for (BluetoothDevice device : bluetoothAdapter.getBondedDevices()) {
+            if (device.getName().equals(name)) {
+                connect(device);
                 return;
             }
         }
+        throw new IllegalArgumentException("Invalid name!");
     }
 
-    public void connectToDevice(BluetoothDevice device) {
+    public void connect(BluetoothDevice device) {
+        if (device == null) {
+            throw new NullPointerException("Null Bluetooth device!");
+        }
         new ConnectThread(device).start();
     }
 
@@ -100,7 +103,7 @@ public class BluetoothHelper {
 
         } catch (IOException e) {
             for (BluetoothListener listener : listeners) {
-                listener.onError(e.getMessage());
+                listener.onError(e);
             }
         }
     }
@@ -115,7 +118,7 @@ public class BluetoothHelper {
 
         } catch (IOException e) {
             for (BluetoothListener listener : listeners) {
-                listener.onError(e.getMessage());
+                listener.onError(e);
             }
             disconnect();
         }
@@ -168,9 +171,9 @@ public class BluetoothHelper {
 
         void onMessage(String message);
 
-        void onError(String message);
+        void onError(Throwable throwable);
 
-        void onConnectionError(BluetoothDevice device, String message);
+        void onConnectionError(BluetoothDevice device, Throwable throwable);
     }
 
     private class ReceiveThread extends Thread implements Runnable {
@@ -187,7 +190,7 @@ public class BluetoothHelper {
 
             } catch (IOException e) {
                 for (BluetoothListener listener : listeners) {
-                    listener.onError(e.getMessage());
+                    listener.onError(e);
                 }
                 disconnect();
             }
@@ -204,7 +207,7 @@ public class BluetoothHelper {
 
             } catch (IOException e) {
                 for (BluetoothListener listener : listeners) {
-                    listener.onConnectionError(bluetoothDevice, e.getMessage());
+                    listener.onConnectionError(bluetoothDevice, e);
                 }
             }
         }
@@ -224,14 +227,14 @@ public class BluetoothHelper {
 
             } catch (IOException e) {
                 for (BluetoothListener listener : listeners) {
-                    listener.onConnectionError(bluetoothDevice, e.getMessage());
+                    listener.onConnectionError(bluetoothDevice, e);
                 }
                 try {
                     bluetoothSocket.close();
 
                 } catch (IOException closeException) {
                     for (BluetoothListener listener : listeners) {
-                        listener.onError(e.getMessage());
+                        listener.onError(e);
                     }
                 }
             }
