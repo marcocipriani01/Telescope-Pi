@@ -125,21 +125,30 @@
         android:text="@string/power_management"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
-    <ImageButton
-        android:id="@+id/shutdown_button"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/components_margin"
-        android:contentDescription="@string/shutdown"
-        android:onClick="shutdown"
-        android:src="@drawable/shutdown" />
+        android:orientation="horizontal"
+        android:weightSum="2">
 
-    <ImageButton
-        android:id="@+id/reboot_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/reboot"
-        android:onClick="reboot"
-        android:src="@drawable/restart" />
+        <ImageButton
+            android:id="@+id/shutdown_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/components_margin"
+            android:layout_weight="1"
+            android:contentDescription="@string/shutdown"
+            android:onClick="shutdown"
+            android:src="@drawable/shutdown" />
+
+        <ImageButton
+            android:id="@+id/reboot_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:contentDescription="@string/reboot"
+            android:onClick="reboot"
+            android:src="@drawable/restart" />
+    </LinearLayout>
 
 </LinearLayout>

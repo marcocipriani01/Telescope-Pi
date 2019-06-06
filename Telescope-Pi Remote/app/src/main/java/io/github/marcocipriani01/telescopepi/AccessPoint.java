@@ -4,34 +4,6 @@ import androidx.annotation.NonNull;
 
 public class AccessPoint {
 
-    public enum Security {
-        WPA, WEP, NONE;
-
-        public static Security fromString(String s) {
-            if (s == null) {
-                return NONE;
-            }
-
-            switch (s.toLowerCase()) {
-                case "": {
-                    return NONE;
-                }
-
-                case "wpa": {
-                    return WPA;
-                }
-
-                case "wep": {
-                    return WEP;
-                }
-
-                default: {
-                    return null;
-                }
-            }
-        }
-    }
-
     private String ssid;
     private int signal;
     private Security security;
@@ -102,6 +74,44 @@ public class AccessPoint {
 
         } else {
             this.password = password;
+        }
+    }
+
+    public enum Security {
+        WPA(R.string.wpa), WEP(R.string.wep), NONE(R.string.open_network);
+
+        private int nameResId;
+
+        Security(int nameResId) {
+            this.nameResId = nameResId;
+        }
+
+        public static Security fromString(String s) {
+            if (s == null) {
+                return NONE;
+            }
+
+            switch (s.toLowerCase()) {
+                case "": {
+                    return NONE;
+                }
+
+                case "wpa": {
+                    return WPA;
+                }
+
+                case "wep": {
+                    return WEP;
+                }
+
+                default: {
+                    return null;
+                }
+            }
+        }
+
+        public int getNameResId() {
+            return nameResId;
         }
     }
 }

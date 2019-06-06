@@ -55,4 +55,9 @@
     <string name="wifi_signal">Wi-Fi signal</string>
     <string name="reboot_confirm_message">Do you really want to reboot Telescope-Pi?</string>
     <string name="shutdown_confirm_message">Do you really want to shutdown Telescope-Pi?</string>
+    <string name="connect_to_wifi_question">Connect to Wi-Fi AP \"</string>
+    <string name="wpa">WPA</string>
+    <string name="wep">WEP</string>
+    <string name="open_network">Open network</string>
+    <string name="wifi_permission_request">Permission needed to connect to the AP</string>
 </resources>

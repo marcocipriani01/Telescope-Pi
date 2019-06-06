@@ -39,7 +39,7 @@
 - Rebooting...
 
 ## Error messages
-- Erorr=Invalid command!
+- Error=Invalid command!
 - Error=Unable to connect!
 - Error=Unable to scan!
 - Error=Unable to turn on Wi-Fi!

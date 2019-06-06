@@ -6,9 +6,7 @@ import android.content.DialogInterface;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
@@ -31,6 +29,8 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
 
     private TelescopePiApp telescopePiApp = TelescopePiApp.getInstance();
     private AccessPoint hotspotAP;
+    private boolean isHotspotOn;
+    private boolean isWifiOn;
 
     private AlertDialog.Builder errorDialog;
     private TextView netInterfaceLabel;
@@ -194,42 +194,65 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
             return;
         }
 
-        String hotspotSSID = hotspotAP.getSsid();
-        WifiConfiguration conf = new WifiConfiguration();
-        conf.SSID = "\"" + hotspotSSID + "\"";
-
-        String password = hotspotAP.getPassword();
-        switch (hotspotAP.getSecurity()) {
-            case WPA: {
-                conf.preSharedKey = "\"" + password + "\"";
-                break;
+        AlertDialog.Builder alert = new AlertDialog.Builder(ManagerActivity.this);
+        alert.setTitle(R.string.app_name);
+        alert.setMessage(ManagerActivity.this.getString(R.string.connect_to_wifi_question) + hotspotAP.getSsid() + "\"?");
+        /* ManagerActivity.this.getString(AccessPoint.Security.NONE.getNameResId()) +
+                ((hotspotAP.getSecurity() == AccessPoint.Security.NONE) ? "." : (", " + hotspotAP.getPassword()))
+        */
+        alert.setIcon(R.mipmap.app_icon);
+        alert.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
             }
+        });
+        alert.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String hotspotSSID = hotspotAP.getSsid();
+                WifiConfiguration conf = new WifiConfiguration();
+                conf.SSID = "\"" + hotspotSSID + "\"";
 
-            case WEP: {
-                conf.wepKeys[0] = "\"" + password + "\"";
-                conf.wepTxKeyIndex = 0;
-                conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-                conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-                break;
-            }
+                String password = hotspotAP.getPassword();
+                switch (hotspotAP.getSecurity()) {
+                    case WPA: {
+                        conf.preSharedKey = "\"" + password + "\"";
+                        break;
+                    }
 
-            default: {
-                onError();
-                return;
-            }
-        }
+                    case WEP: {
+                        conf.wepKeys[0] = "\"" + password + "\"";
+                        conf.wepTxKeyIndex = 0;
+                        conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+                        conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+                        break;
+                    }
 
-        WifiManager wifiManager = (WifiManager) telescopePiApp.getSystemService(Context.WIFI_SERVICE);
-        wifiManager.addNetwork(conf);
-        List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
-        for (WifiConfiguration i : list) {
-            if (i.SSID != null && i.SSID.equals("\"" + hotspotSSID + "\"")) {
-                wifiManager.disconnect();
-                wifiManager.enableNetwork(i.networkId, true);
-                wifiManager.reconnect();
-                break;
+                    default: {
+                        onError();
+                        return;
+                    }
+                }
+
+                WifiManager wifiManager = (WifiManager) telescopePiApp.getSystemService(Context.WIFI_SERVICE);
+                wifiManager.setWifiEnabled(true);
+                wifiManager.addNetwork(conf);
+                List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
+                for (WifiConfiguration i : list) {
+                    if (i.SSID != null && i.SSID.equals("\"" + hotspotSSID + "\"")) {
+                        wifiManager.disconnect();
+                        wifiManager.enableNetwork(i.networkId, true);
+                        wifiManager.reconnect();
+
+                    } else {
+                        wifiManager.disableNetwork(i.networkId);
+                    }
+                }
+                dialog.dismiss();
             }
-        }
+        });
+        alert.show();
     }
 
     @Override
@@ -249,9 +272,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                 progressBar.setVisibility(View.GONE);
                 reloadIPButton.setEnabled(true);
                 wifiSwitch.setEnabled(true);
-                connectWiFiButton.setEnabled(true);
                 hotspotSwitch.setEnabled(true);
-                connectHotspotButton.setEnabled(true);
                 indiSwitch.setEnabled(true);
                 shutdownButton.setEnabled(true);
                 rebootButton.setEnabled(true);
@@ -284,7 +305,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                 }
 
                 progressBar.setVisibility(View.GONE);
-                if (message.startsWith("Error=")) {
+                if (message.startsWith("Error=") && !message.equals("Error=Invalid command!")) {
                     errorDialog.setMessage(message.replace("Error=", ""));
                     errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_accept),
                             new DialogInterface.OnClickListener() {
@@ -311,13 +332,21 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                     netInterfaceLabel.setText(message.replace("NetInterface=", ""));
 
                 } else if (message.startsWith("WiFi=")) {
-                    wifiSwitch.setChecked(Boolean.valueOf(message.replace("WiFi=", "").toLowerCase()));
+                    isWifiOn = Boolean.valueOf(message.replace("WiFi=", "").toLowerCase());
+                    connectWiFiButton.setEnabled(isWifiOn);
+                    wifiSwitch.setChecked(isWifiOn);
+                    hotspotSwitch.setEnabled(isWifiOn);
+                    connectHotspotButton.setEnabled(isHotspotOn && isWifiOn);
 
                 } else if (message.startsWith("IP=")) {
                     ipLabel.setText(message.replace("IP=", ""));
 
                 } else if (message.startsWith("Hotspot=")) {
-                    hotspotSwitch.setChecked(Boolean.valueOf(message.replace("Hotspot=", "").toLowerCase()));
+                    isHotspotOn = Boolean.valueOf(message.replace("Hotspot=", "").toLowerCase());
+                    hotspotSwitch.setChecked(isHotspotOn);
+                    connectHotspotButton.setEnabled(isHotspotOn);
+                    wifiSwitch.setEnabled(isHotspotOn);
+                    connectWiFiButton.setEnabled(isWifiOn && isHotspotOn);
 
                 } else if (message.startsWith("HotspotSSID=")) {
                     hotspotAP = new AccessPoint(message.replace("HotspotSSID=", ""));

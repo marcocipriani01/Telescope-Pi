@@ -31,12 +31,15 @@ def main():
     Creates the Bluetooth server and starts listening to clients.
     """
     global net_interface
+    global wifi_on
+    global hotspot_enabled
     global hotspotssid
     global hotspotpswd
     global server_sock
     global client_sock
     global username
     global type_pswd
+    global indiweb
     if len(sys.argv) == 5:
         signal.signal(signal.SIGINT, signal_handler)
         username = sys.argv[1]
@@ -58,7 +61,6 @@ def main():
                           service_classes=[uuid, SERIAL_PORT_CLASS], profiles=[SERIAL_PORT_PROFILE])
 
         indiweb_start()
-
         turn_on_wifi()
         try:
             if len(Cell.all(net_interface)) == 0:
@@ -83,7 +85,8 @@ def main():
                     data = client_sock.recv(1024)
                     if len(data) == 0:
                         break
-                    parse_rfcomm(data.replace("\n", "").strip())
+                    for line in data.splitlines():
+                        parse_rfcomm(line.strip())
             except IOError:
                 pass
             print("Disconnected")
@@ -110,6 +113,7 @@ def parse_rfcomm(line):
     global net_interface
     global net_scan
     global wifi_on
+    global hotspot_enabled
     if type_pswd is True:
         type_pswd = False
         if line != "#":
@@ -122,6 +126,8 @@ def parse_rfcomm(line):
     else:
         if len(line) == 2:
             if line == "01":
+                if hotspot_enabled is True:
+                    turn_off_hotspot()
                 try:
                     print(str(nmcli("radio", "wifi", "off")))
                     bt_send("WiFi=False")
@@ -133,13 +139,7 @@ def parse_rfcomm(line):
             elif line == "03":
                 start_hotspot()
             elif line == "04":
-                bt_send("Busy=Stopping hotspot...")
-                try:
-                    print(str(nmcli("connection", "down", hotspotssid)))
-                    hotspot_enabled = False
-                    bt_send("Hotspot=False")
-                except ErrorReturnCode:
-                    log_err("Unable to stop the hotspot!")
+                turn_off_hotspot()
             elif line == "05":
                 send_ip()
             elif line == "06":
@@ -181,14 +181,29 @@ def parse_rfcomm(line):
                 elif line[1] == '1':
                     indiweb_start()
                 else:
+                    print("Received: \"" + line + \")
                     log_err("Invalid command!")
             else:
+                print("Received: \"" + line + \")
                 log_err("Invalid command!")
         else:
+            print("Received: \"" + line + \")
             log_err("Invalid command!")
 
 
+def turn_off_hotspot():
+    global hotspot_enabled
+    bt_send("Busy=Stopping hotspot...")
+    try:
+        print(str(nmcli("connection", "down", hotspotssid)))
+        hotspot_enabled = False
+        bt_send("Hotspot=False")
+    except ErrorReturnCode:
+        log_err("Unable to stop the hotspot!")
+
+
 def turn_on_wifi():
+    global wifi_on
     try:
         print(str(nmcli("radio", "wifi", "on")))
         bt_send("WiFi=True")
@@ -254,16 +269,22 @@ def start_hotspot():
     global hotspotssid
     global hotspotpswd
     global hotspot_enabled
-    turn_on_wifi()
-    bt_send("Busy=Starting hotspot...")
+    global wifi_on
     try:
-        print(str(nmcli("device", "wifi", "hotspot", "con-name", hotspotssid,
-                        "ssid", hotspotssid, "band", "bg", "password",
-                        hotspotpswd)).replace("\n", ""))
-        hotspot_enabled = True
-        bt_send("Hotspot=True")
+        print(str(nmcli("radio", "wifi", "on")))
+        bt_send("WiFi=True")
+        wifi_on = True
+        bt_send("Busy=Starting hotspot...")
+        try:
+            print(str(nmcli("device", "wifi", "hotspot", "con-name", hotspotssid,
+                            "ssid", hotspotssid, "band", "bg", "password",
+                            hotspotpswd)))
+            hotspot_enabled = True
+            bt_send("Hotspot=True")
+        except ErrorReturnCode:
+            log_err("Unable to start the hotspot!")
     except ErrorReturnCode:
-        log_err("Unable to start the hotspot!")
+        log_err("Unable to turn on Wi-Fi!")
 
 
 def indiweb_start():
@@ -287,7 +308,7 @@ def log_indi(line):
     """
     Logs the indiweb output
     """
-    print("indiweb: " + line.replace("\n", ""))
+    print("indiweb: " + line)
 
 
 def kill_indi():
