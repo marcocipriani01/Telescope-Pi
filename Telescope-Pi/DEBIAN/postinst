@@ -49,9 +49,6 @@ echo "Stopping old services..."
 systemctl stop telescope-pi 2> /dev/null
 systemctl stop openfocuser 2> /dev/null
 
-echo "Updating network configuration..."
-ln -sf /lib/systemd/resolv.conf /etc/resolv.conf
-
 if [[ -f "/etc/telescope-pi" ]]; then
   if (whiptail --title "Telescope-Pi" --yesno "Configuration files found. Keep using them?" 8 78); then
     echo "Using old configuration files..."
@@ -61,6 +58,15 @@ if [[ -f "/etc/telescope-pi" ]]; then
 else
   create_config
 fi
+
+echo "Updating network configuration..."
+hostname="$(awk '{print $3}' /etc/telescope-pi)"
+if [[ -z "$hostname" ]]; then
+    echo "Error!"
+    exit 1
+fi
+/usr/bin/ch-hostname "$hostname"
+ln -sf /lib/systemd/resolv.conf /etc/resolv.conf
 
 username="$(awk '{print $1}' /etc/telescope-pi)"
 if [[ -z "$username" ]]; then

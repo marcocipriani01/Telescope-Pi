@@ -181,7 +181,7 @@ def parse_rfcomm(line):
                 elif line[1] == '1':
                     indiweb_start()
                 else:
-                    print("Received: \"" + line + \")
+                    print("Received: \"" + line + "\"")
                     log_err("Invalid command!")
             else:
                 print("Received: \"" + line + \")
