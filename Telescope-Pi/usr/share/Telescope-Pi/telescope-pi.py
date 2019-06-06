@@ -306,7 +306,8 @@ def kill_indi():
         except SignalException:
             pass
         for proc in running_procs():
-            if proc.name() == "indiserver" or proc.startswith("indi_"):
+            pname = proc.name()
+            if pname == "indiserver" or pname.startswith("indi_"):
                 proc.kill()
 
 
