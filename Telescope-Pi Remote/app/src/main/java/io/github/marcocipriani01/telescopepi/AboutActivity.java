@@ -10,15 +10,13 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import io.github.marcocipriani01.telescopepi.R;
-
 public class AboutActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
-        setSupportActionBar(this.<Toolbar>findViewById(R.id.toolbar));
+        setSupportActionBar(this.<Toolbar>findViewById(R.id.about_toolbar));
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

@@ -52,4 +52,7 @@
     <string name="type_pswd_msg">Type password for Wi-Fi AP \"</string>
     <string name="ok">OK</string>
     <string name="no_wifi_aps">No Wi-Fi APs detected</string>
+    <string name="wifi_signal">Wi-Fi signal</string>
+    <string name="reboot_confirm_message">Do you really want to reboot Telescope-Pi?</string>
+    <string name="shutdown_confirm_message">Do you really want to shutdown Telescope-Pi?</string>
 </resources>

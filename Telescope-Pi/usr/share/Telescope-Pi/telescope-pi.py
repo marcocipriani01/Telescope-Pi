@@ -156,15 +156,16 @@ def parse_rfcomm(line):
                         bt_send(msg + "]")
                 except InterfaceError:
                     log_err("Unable to scan!")
-            elif line == '07':
+            elif line == "07":
                 log("Shutting down...")
                 shutdown("now")
-            elif line == '08':
+            elif line == "08":
                 log("Rebooting...")
                 reboot("now")
             elif line[0] == '1':
-                if 0 <= index < len(net_scan):
-                    ap = str(net_scan[index].ssid)
+                i = int(line[1])
+                if 0 <= i < min(len(net_scan), 10):
+                    ap = str(net_scan[i].ssid)
                     bt_send("Busy=Connecting to Wi-Fi AP " + ap)
                     try:
                         print(str(nmcli("connection", "up", "id", ap)))
@@ -172,13 +173,13 @@ def parse_rfcomm(line):
                     except ErrorReturnCode:
                         bt_send("TypePswd=" + ap)
                         type_pswd = True
-                elif line[0] == '3':
-                    if line[1] == '0':
-                        kill_indi()
-                    elif line[1] == '1':
-                        indiweb_start()
-                    else:
-                        log_err("Invalid command!")
+                else:
+                    log_err("Invalid command!")
+            elif line[0] == '2':
+                if line[1] == '0':
+                    kill_indi()
+                elif line[1] == '1':
+                    indiweb_start()
                 else:
                     log_err("Invalid command!")
             else:

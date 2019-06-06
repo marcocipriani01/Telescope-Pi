@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/components_margin"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/wifi_0_bar"
+        android:id="@+id/wifi_signal_img"
+        android:contentDescription="@string/wifi_signal" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/components_margin"
+        android:layout_marginLeft="@dimen/components_margin"
+        android:text="@string/unknown"
+        android:layout_marginStart="@dimen/components_margin"
+        android:id="@+id/wifi_ssid"/>
+
+</LinearLayout>

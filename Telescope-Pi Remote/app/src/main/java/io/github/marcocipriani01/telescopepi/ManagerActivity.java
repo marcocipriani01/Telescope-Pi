@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Switch;
@@ -48,7 +49,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manager);
-        setSupportActionBar(this.<Toolbar>findViewById(R.id.toolbar));
+        setSupportActionBar(this.<Toolbar>findViewById(R.id.manager_toolbar));
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -91,6 +92,40 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
             return;
         }
 
+        wifiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    telescopePiApp.bluetooth.send("02");
+
+                } else {
+                    telescopePiApp.bluetooth.send("01");
+                }
+            }
+        });
+        hotspotSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    telescopePiApp.bluetooth.send("03");
+
+                } else {
+                    telescopePiApp.bluetooth.send("04");
+                }
+            }
+        });
+        indiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    telescopePiApp.bluetooth.send("21");
+
+                } else {
+                    telescopePiApp.bluetooth.send("20");
+                }
+            }
+        });
+
         reloadIPButton.setEnabled(false);
         wifiSwitch.setEnabled(false);
         connectWiFiButton.setEnabled(false);
@@ -102,22 +137,55 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
     }
 
     public void askIP(View v) {
+        progressBar.setVisibility(View.VISIBLE);
         telescopePiApp.bluetooth.send("05");
-        Log.e(TelescopePiApp.TAG, "IP");
     }
 
     public void connectWiFi(View v) {
+        progressBar.setVisibility(View.VISIBLE);
         telescopePiApp.bluetooth.send("06");
     }
 
     public void shutdown(View v) {
-        telescopePiApp.bluetooth.send("07");
-        Log.e(TelescopePiApp.TAG, "Shutdown");
+        AlertDialog.Builder alert = new AlertDialog.Builder(ManagerActivity.this);
+        alert.setTitle(R.string.app_name);
+        alert.setMessage(R.string.shutdown_confirm_message);
+        alert.setIcon(R.mipmap.app_icon);
+        alert.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alert.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                telescopePiApp.bluetooth.send("07");
+                dialog.dismiss();
+            }
+        });
+        alert.show();
     }
 
     public void reboot(View v) {
-        telescopePiApp.bluetooth.send("08");
-        Log.e(TelescopePiApp.TAG, "Reboot");
+        AlertDialog.Builder alert = new AlertDialog.Builder(ManagerActivity.this);
+        alert.setTitle(R.string.app_name);
+        alert.setMessage(R.string.reboot_confirm_message);
+        alert.setIcon(R.mipmap.app_icon);
+        alert.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        alert.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                telescopePiApp.bluetooth.send("08");
+                dialog.dismiss();
+            }
+        });
+        alert.show();
     }
 
     public void connectHotspot(View v) {
@@ -222,7 +290,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                             new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-
+                                    dialog.dismiss();
                                 }
                             });
                     errorDialog.show();
@@ -273,7 +341,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                 } else if (message.startsWith("WiFiAPs=[")) {
                     try {
                         String[] ma = message.replace("WiFiAPs=[", "").replace("]", "").split(",");
-                        final ArrayAdapter<AccessPoint> apsList = new ArrayAdapter<>(ManagerActivity.this, android.R.layout.select_dialog_singlechoice);
+                        final AccessPointAdapter apsList = new AccessPointAdapter(ManagerActivity.this);
                         for (String ap : ma) {
                             ap = ap.trim();
                             String signal = ap.split("[()]")[1];
@@ -281,8 +349,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                         }
 
                         AlertDialog.Builder alert = new AlertDialog.Builder(ManagerActivity.this);
-                        alert.setTitle(R.string.app_name);
-                        alert.setMessage(R.string.select_ap_dialog_title);
+                        alert.setTitle(R.string.select_ap_dialog_title);
                         alert.setIcon(R.mipmap.app_icon);
                         alert.setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
                             @Override
@@ -293,7 +360,8 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                         alert.setAdapter(apsList, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                telescopePiApp.bluetooth.send("0" + which);
+                                telescopePiApp.bluetooth.send("1" + which);
+                                dialog.dismiss();
                             }
                         });
                         alert.show();
@@ -312,11 +380,13 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                     alert.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             telescopePiApp.bluetooth.send(input.getText().toString());
+                            dialog.dismiss();
                         }
                     });
                     alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             telescopePiApp.bluetooth.send("#");
+                            dialog.dismiss();
                         }
                     });
                     alert.show();

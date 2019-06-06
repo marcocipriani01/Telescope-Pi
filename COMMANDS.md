@@ -24,6 +24,8 @@
 - 07 *Shutdown*
 - 08 *Reboot*
 - 1x *Connect to Wi-Fi AP number x*
+- 20 *Stop INDI*
+- 21 *Start INDI*
 
 ## Busy messages
 - Busy=Looking for Wi-Fi access points...

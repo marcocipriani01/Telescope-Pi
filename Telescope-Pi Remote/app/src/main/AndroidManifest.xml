@@ -27,9 +27,9 @@
         </activity>
         <activity
             android:name=".ManagerActivity"
+            android:label="@string/app_name"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
-
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="io.github.marcocipriani01.telescopepi.MainActivity" />
