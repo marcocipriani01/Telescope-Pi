@@ -25,6 +25,10 @@ import java.util.List;
 
 import static io.github.marcocipriani01.telescopepi.TelescopePiApp.INTENT_DEVICE;
 
+/**
+ * @author marcocipriani01
+ * @version 1.0
+ */
 public class ManagerActivity extends AppCompatActivity implements BluetoothHelper.BluetoothListener {
 
     private TelescopePiApp telescopePiApp = TelescopePiApp.getInstance();

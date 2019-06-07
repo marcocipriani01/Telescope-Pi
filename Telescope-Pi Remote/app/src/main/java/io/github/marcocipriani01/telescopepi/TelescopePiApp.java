@@ -2,6 +2,10 @@ package io.github.marcocipriani01.telescopepi;
 
 import android.app.Application;
 
+/**
+ * @author marcocipriani01
+ * @version 1.0
+ */
 public class TelescopePiApp extends Application {
 
     public static final String TAG = "Telescope-Pi Remote";

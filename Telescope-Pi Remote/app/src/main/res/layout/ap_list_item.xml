@@ -19,6 +19,6 @@
         android:layout_marginLeft="@dimen/components_margin"
         android:text="@string/unknown"
         android:layout_marginStart="@dimen/components_margin"
-        android:id="@+id/wifi_ssid"/>
+        android:id="@+id/wifi_ssid" />
 
 </LinearLayout>

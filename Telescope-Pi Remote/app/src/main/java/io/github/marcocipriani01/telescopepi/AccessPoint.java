@@ -2,6 +2,10 @@ package io.github.marcocipriani01.telescopepi;
 
 import androidx.annotation.NonNull;
 
+/**
+ * @author marcocipriani01
+ * @version 1.0
+ */
 public class AccessPoint {
 
     private String ssid;

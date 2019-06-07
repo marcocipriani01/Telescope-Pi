@@ -15,6 +15,10 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * @author marcocipriani01
+ * @version 1.0
+ */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class BluetoothHelper {
 

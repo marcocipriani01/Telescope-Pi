@@ -10,6 +10,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+/**
+ * @author marcocipriani01
+ * @version 1.0
+ */
 public class AccessPointAdapter extends ArrayAdapter<AccessPoint> {
 
     public AccessPointAdapter(Context context) {

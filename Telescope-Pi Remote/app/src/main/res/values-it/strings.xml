@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Telescope-Pi Remote</string>
+    <string name="about_activity_title">Riguardo Telescope-Pi</string>
+    <string name="bluetooth_enabled">Bluetooth abilitato</string>
+    <string name="bluetooth_must_be_enabled">Il Bluetooth deve essere acceso per usare questa app!</string>
+    <string name="connect_hotspot">Connetti all\'hotspot</string>
+    <string name="connect_to_wifi_question">Connetti all\'AP Wi-Fi \"</string>
+    <string name="connection_error">Errore durante la connessione!</string>
+    <string name="dialog_accept">Capito</string>
+    <string name="dialog_cancel">Annulla</string>
+    <string name="disconnected">Disconnesso</string>
+    <string name="error">Si è verificato un errore!</string>
+    <string name="error_no_devices_found">Nessun dispositivo accoppiato trovato!</string>
+    <string name="error_unsupported">Il Bluetooth non è supportato dal tuo dispositivo!</string>
+    <string name="hotspot">Hotspot</string>
+    <string name="indi_management">Gestione INDI:</string>
+    <string name="indi_web_manager">INDI Web Manager</string>
+    <string name="ip_address">Indirizzo IP:</string>
+    <string name="network_interface">Interfaccia di rete:</string>
+    <string name="network_management">Gestione rete:</string>
+    <string name="no_wifi_aps">Nessun AP Wi-Fi rilevato</string>
+    <string name="ok">OK</string>
+    <string name="open_network">Rete aperta</string>
+    <string name="power_management">Gestione alimentazione:</string>
+    <string name="reboot">Riavvia</string>
+    <string name="reboot_confirm_message">Vuoi veramente riavviare Telescope-Pi?</string>
+    <string name="refresh">Ricarica</string>
+    <string name="select_ap_dialog_title">Seleziona un AP Wi-Fi:</string>
+    <string name="select_device">Seleziona un dispositivo:</string>
+    <string name="select_network">Seleziona una rete</string>
+    <string name="shutdown">Spegni</string>
+    <string name="shutdown_confirm_message">Vuoi veramente spegnere Telescope-Pi?</string>
+    <string name="telescope_pi_description">
+        \nTelescope-Pi è un gestore remoto tramite Bluetooth per Raspberry Pi astronomiche.
+        Dispone di un pannello di controllo per il Wi-Fi, la modalità hotspot e INDI e gestisce inoltre lo spegnimento remoto.\n\n
+        La pagina principale del progetto è https://github.com/marcocipriani01/Telescope-Pi
+        \n\nSviluppato da marcocipriani01
+    </string>
+    <string name="type_pswd_msg">Scrivi la password per la rete \"</string>
+    <string name="unknown">sconosciuto</string>
+    <string name="wep">WEP</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="wifi_signal">Segnale Wi-Fi</string>
+    <string name="wpa">WPA</string>
+</resources>

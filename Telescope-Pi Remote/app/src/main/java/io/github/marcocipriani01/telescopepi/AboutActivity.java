@@ -10,6 +10,10 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+/**
+ * @author marcocipriani01
+ * @version 1.0
+ */
 public class AboutActivity extends AppCompatActivity {
 
     @Override

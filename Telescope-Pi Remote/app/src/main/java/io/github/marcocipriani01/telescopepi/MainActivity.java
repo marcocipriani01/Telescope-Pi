@@ -18,6 +18,10 @@ import com.google.android.material.snackbar.Snackbar;
 
 import static io.github.marcocipriani01.telescopepi.TelescopePiApp.INTENT_DEVICE;
 
+/**
+ * @author marcocipriani01
+ * @version 1.0
+ */
 public class MainActivity extends AppCompatActivity {
 
     private static boolean btEnabledOnCreate = false;
