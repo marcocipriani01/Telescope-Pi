@@ -11,7 +11,7 @@ from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service,\
 from sh import sudo, nmcli, shutdown, reboot, ErrorReturnCode, SignalException
 import socket
 
-shutdown_button = Button(14)
+shutdown_button = Button(15)
 type_pswd = False
 ap = None
 net_scan = None
