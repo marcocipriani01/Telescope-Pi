@@ -109,7 +109,7 @@ def shutdown_button_thread():
         if shutdown_button.is_pressed:
             sleep(4)
             if shutdown_button.is_pressed:
-                shutdown()
+                shutdown_pi()
         sleep(1)
 
 
@@ -179,7 +179,7 @@ def parse_rfcomm(line):
                     log_err("Unable to scan!")
                     print(e.message)
             elif line == "07":
-                shutdown()
+                shutdown_pi()
             elif line == "08":
                 log("Rebooting...")
                 reboot("now")
@@ -212,7 +212,7 @@ def parse_rfcomm(line):
             log_err("Invalid command!")
 
 
-def shutdown():
+def shutdown_pi():
     log("Shutting down...")
     shutdown("now")
 
