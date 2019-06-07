@@ -61,6 +61,7 @@
             android:layout_marginStart="4dp"
             android:layout_marginLeft="4dp"
             android:layout_marginTop="12dp"
+            android:maxEms="15"
             android:layout_toEndOf="@+id/ip_descr_label"
             android:layout_toRightOf="@+id/ip_descr_label"
             android:text="@string/unknown" />

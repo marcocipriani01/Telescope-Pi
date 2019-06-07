@@ -1,6 +1,6 @@
 [Unit]
 Description=Raspberry Pi indiserver, network and power manager via Bluetooth
-StartLimitIntervalSec=0
+StartLimitInterval=0
 
 [Service]
 Type=simple
@@ -8,7 +8,7 @@ Restart=always
 RestartSec=5
 User=root
 StartLimitBurst=10
-StartLimitIntervalSec=120
+StartLimitInterval=120
 ExecStart=/usr/bin/telescope-pi
 
 [Install]

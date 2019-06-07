@@ -12,6 +12,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
+        android:autoLink="web"
+        android:linksClickable="true"
         android:text="@string/telescope_pi_description" />
 
 </androidx.core.widget.NestedScrollView>

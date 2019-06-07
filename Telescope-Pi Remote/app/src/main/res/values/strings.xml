@@ -29,17 +29,10 @@
     <string name="select_device">Select a device:</string>
     <string name="about_activity_title">About Telescope-Pi</string>
     <string name="telescope_pi_description">
-        "Material is the metaphor.\n\n"
-        "A material metaphor is the unifying theory of a rationalized space and a system of motion."
-        "The material is grounded in tactile reality, inspired by the study of paper and ink, yet "
-        "technologically advanced and open to imagination and magic.\n"
-        "Surfaces and edges of the material provide visual cues that are grounded in reality. The "
-        "use of familiar tactile attributes helps users quickly understand affordances. Yet the "
-        "flexibility of the material creates new affordances that supercede those in the physical "
-        "world, without breaking the rules of physics.\n"
-        "The fundamentals of light, surface, and movement are key to conveying how objects move, "
-        "interact, and exist in space and in relation to each other. Realistic lighting shows "
-        "seams, divides space, and indicates moving parts.\n\n"
+        \nTelescope-Pi is a Bluetooth remote manager for astronomical Raspberry Pis.
+        It features a remote control panel for Wi-Fi, hotspot mode and INDI and also handles power management.\n\n
+        The project's main site is https://github.com/marcocipriani01/Telescope-Pi
+        \n\nDeveloped by marcocipriani01
     </string>
     <string name="title_activity_control_panel">ControlPanelActivity</string>
     <string name="tab_text_1">Tab 1</string>

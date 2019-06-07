@@ -12,6 +12,7 @@ from sh import sudo, nmcli, shutdown, reboot, ErrorReturnCode, SignalException
 import socket
 
 shutdown_button = Button(15)
+shutdown_thread_run = True
 type_pswd = False
 ap = None
 net_scan = None
@@ -105,10 +106,10 @@ def main():
 
 
 def shutdown_button_thread():
-    while True:
+    while shutdown_thread_run is True:
         if shutdown_button.is_pressed:
             sleep(4)
-            if shutdown_button.is_pressed:
+            if shutdown_button.is_pressed and shutdown_thread_run is True:
                 shutdown_pi()
         sleep(1)
 
@@ -249,6 +250,7 @@ def signal_handler(sig, frame):
     Handles the signals sent to this process.
     """
     print("Stopping Telescope-Pi...")
+    shutdown_thread_run = False
     global server_sock
     global client_sock
     if server_sock is not None:
