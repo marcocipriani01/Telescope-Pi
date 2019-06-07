@@ -31,8 +31,7 @@
     <string name="select_network">Seleziona una rete</string>
     <string name="shutdown">Spegni</string>
     <string name="shutdown_confirm_message">Vuoi veramente spegnere Telescope-Pi?</string>
-    <string name="telescope_pi_description">
-        \nTelescope-Pi è un gestore remoto tramite Bluetooth per Raspberry Pi astronomiche.
+    <string name="telescope_pi_description">\nTelescope-Pi è un gestore remoto tramite Bluetooth per Raspberry Pi astronomiche.
         Dispone di un pannello di controllo per il Wi-Fi, la modalità hotspot e INDI e gestisce inoltre lo spegnimento remoto.\n\n
         La pagina principale del progetto è https://github.com/marcocipriani01/Telescope-Pi
         \n\nSviluppato da marcocipriani01
