@@ -81,7 +81,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
 
         } else {
             errorDialog.setMessage(R.string.connection_error);
-            errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_accept),
+            errorDialog.setPositiveButton(R.string.dialog_accept,
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -283,7 +283,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
     @Override
     public void onDisconnection(BluetoothDevice device) {
         errorDialog.setMessage(R.string.disconnected);
-        errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_accept),
+        errorDialog.setPositiveButton(R.string.dialog_accept,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -307,7 +307,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                 progressBar.setVisibility(View.GONE);
                 if (message.startsWith("Error=") && !message.equals("Error=Invalid command!")) {
                     errorDialog.setMessage(message.replace("Error=", ""));
-                    errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_accept),
+                    errorDialog.setPositiveButton(R.string.dialog_accept,
                             new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -319,7 +319,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                 } else if (message.equals("Shutting down...") || message.equals("Rebooting...")) {
                     telescopePiApp.bluetooth.disconnect();
                     errorDialog.setMessage(R.string.disconnected);
-                    errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_accept),
+                    errorDialog.setPositiveButton(R.string.dialog_accept,
                             new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -345,8 +345,8 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                     isHotspotOn = Boolean.valueOf(message.replace("Hotspot=", "").toLowerCase());
                     hotspotSwitch.setChecked(isHotspotOn);
                     connectHotspotButton.setEnabled(isHotspotOn);
-                    wifiSwitch.setEnabled(isHotspotOn);
-                    connectWiFiButton.setEnabled(isWifiOn && isHotspotOn);
+                    wifiSwitch.setEnabled(!isHotspotOn);
+                    connectWiFiButton.setEnabled(isWifiOn && !isHotspotOn);
 
                 } else if (message.startsWith("HotspotSSID=")) {
                     hotspotAP = new AccessPoint(message.replace("HotspotSSID=", ""));
@@ -450,7 +450,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
             @Override
             public void run() {
                 errorDialog.setMessage(R.string.connection_error);
-                errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_accept),
+                errorDialog.setPositiveButton(R.string.dialog_accept,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {

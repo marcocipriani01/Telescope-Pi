@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (UnsupportedOperationException e) {
             errorDialog.setMessage(getApplicationContext().getString(R.string.error_unsupported));
-            errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_accept),
+            errorDialog.setPositiveButton(R.string.dialog_accept,
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
             } else {
                 errorDialog.setMessage(R.string.bluetooth_must_be_enabled);
-                errorDialog.setPositiveButton(getApplicationContext().getText(R.string.dialog_accept),
+                errorDialog.setPositiveButton(R.string.dialog_accept,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {

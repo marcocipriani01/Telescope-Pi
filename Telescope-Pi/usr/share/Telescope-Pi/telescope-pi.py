@@ -177,7 +177,7 @@ def parse_rfcomm(line):
                     log_err("Invalid command!")
             elif line[0] == '2':
                 if line[1] == '0':
-                    kill_indi()
+                    stop_indi()
                 elif line[1] == '1':
                     indiweb_start()
                 else:
@@ -233,7 +233,7 @@ def signal_handler(sig, frame):
             client_sock.close()
         except IOError:
             print("I/O error occurred while closing client socket!")
-    kill_indi()
+    stop_indi()
     sys.exit(0)
 
 
@@ -294,7 +294,7 @@ def indiweb_start():
     """
     global username
     global indiweb
-    kill_indi()
+    stop_indi()
     bt_send("Busy=Starting INDI Web Manager...")
     try:
         indiweb = sudo("-u", username, "indi-web", "-v",
@@ -311,28 +311,31 @@ def log_indi(line):
     print("indiweb: " + line)
 
 
-def kill_indi():
+def stop_indi():
     """
     Kills indiweb if running.
     """
     global indiweb
-    if indiweb is not None:
-        print("Killing old INDI processes...")
-        try:
-            indiweb.terminate()
-        except SignalException:
-            pass
-        try:
-            indiweb.kill_group()
-        except SignalException:
-            pass
+    print("Killing old INDI processes...")
+    try:
+        indiweb.terminate()
+    except (SignalException, OSError):
+        pass
+    try:
+        indiweb.kill_group()
+    except (SignalException, OSError):
+        pass
+    try:
         for proc in running_procs():
             pname = proc.name()
             if pname == "indiserver" or pname.startswith("indi_"):
                 proc.kill()
+    except OSError:
+        pass
+    indiweb = None
 
 
-def clean_indi():
+def clean_indi(cmd, success, exit_code):
     """
     Makes the indiweb var equal to None
     """
