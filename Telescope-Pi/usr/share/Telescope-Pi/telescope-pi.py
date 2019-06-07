@@ -2,12 +2,16 @@ from wifi import Cell
 from wifi.exceptions import InterfaceError
 import sys
 import signal
+from gpiozero import Button
+import time
+from threading import Thread
 from psutil import process_iter as running_procs
 from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service,\
     SERIAL_PORT_CLASS, SERIAL_PORT_PROFILE
 from sh import sudo, nmcli, shutdown, reboot, ErrorReturnCode, SignalException
 import socket
 
+shutdown_button = Button(14)
 type_pswd = False
 ap = None
 net_scan = None
@@ -42,6 +46,8 @@ def main():
     global indiweb
     if len(sys.argv) == 5:
         signal.signal(signal.SIGINT, signal_handler)
+        Thread(target=shutdown_button_thread).start()
+
         username = sys.argv[1]
         print("Username = " + username)
         net_interface = sys.argv[2]
@@ -66,8 +72,9 @@ def main():
             if len(Cell.all(net_interface)) == 0:
                 start_hotspot()
                 print("No Wi-Fi newtworks found, hotspot started.")
-        except InterfaceError:
+        except InterfaceError as e:
             print("An error occurred while scanning Wi-Fi newtwork!")
+            print(e.message)
 
         while True:
             print("Waiting for connection on RFCOMM channel %d" % port)
@@ -87,14 +94,21 @@ def main():
                         break
                     for line in data.splitlines():
                         parse_rfcomm(line.strip())
-            except IOError:
-                pass
+            except Exception as e:
+                print(e.message)
             print("Disconnected")
             client_sock.close()
             type_pswd = False
     else:
         print("Usage: \"sudo python hotspot-controller-bluetooth.py <user> <network_interface> <hotspot_ssid> <hotspot_password>\"")
         exit(1)
+
+
+def shutdown_button_thread():
+    if shutdown_button.is_pressed:
+        time.sleep(4)
+        if shutdown_button.is_pressed:
+            shutdown()
 
 
 def send_ip():
@@ -121,8 +135,9 @@ def parse_rfcomm(line):
             try:
                 print(str(nmcli("device", "wifi", "connect", ap, "password", line)))
                 send_ip()
-            except ErrorReturnCode:
+            except ErrorReturnCode as e:
                 log_err("Unable to connect!")
+                print(e.message)
     else:
         if len(line) == 2:
             if line == "01":
@@ -132,8 +147,9 @@ def parse_rfcomm(line):
                     print(str(nmcli("radio", "wifi", "off")))
                     bt_send("WiFi=False")
                     wifi_on = False
-                except ErrorReturnCode:
+                except ErrorReturnCode as e:
                     log_err("Unable to turn off Wi-Fi!")
+                    print(e.message)
             elif line == "02":
                 turn_on_wifi()
             elif line == "03":
@@ -157,11 +173,11 @@ def parse_rfcomm(line):
                                 net_scan[i].ssid + \
                                 "(" + net_scan[i].quality + ")"
                         bt_send(msg + "]")
-                except InterfaceError:
+                except InterfaceError as e:
                     log_err("Unable to scan!")
+                    print(e.message)
             elif line == "07":
-                log("Shutting down...")
-                shutdown("now")
+                shutdown()
             elif line == "08":
                 log("Rebooting...")
                 reboot("now")
@@ -173,7 +189,7 @@ def parse_rfcomm(line):
                     try:
                         print(str(nmcli("connection", "up", "id", ap)))
                         send_ip()
-                    except ErrorReturnCode:
+                    except ErrorReturnCode as e:
                         bt_send("TypePswd=" + ap)
                         type_pswd = True
                 else:
@@ -194,6 +210,11 @@ def parse_rfcomm(line):
             log_err("Invalid command!")
 
 
+def shutdown():
+    log("Shutting down...")
+    shutdown("now")
+
+
 def turn_off_hotspot():
     global hotspot_enabled
     bt_send("Busy=Stopping hotspot...")
@@ -201,8 +222,9 @@ def turn_off_hotspot():
         print(str(nmcli("connection", "down", hotspotssid)))
         hotspot_enabled = False
         bt_send("Hotspot=False")
-    except ErrorReturnCode:
+    except ErrorReturnCode as e:
         log_err("Unable to stop the hotspot!")
+        print(e.message)
 
 
 def turn_on_wifi():
@@ -211,8 +233,9 @@ def turn_on_wifi():
         print(str(nmcli("radio", "wifi", "on")))
         bt_send("WiFi=True")
         wifi_on = True
-    except ErrorReturnCode:
+    except ErrorReturnCode as e:
         log_err("Unable to turn on Wi-Fi!")
+        print(e.message)
 
 
 def get_ap_quality(val):
@@ -229,13 +252,15 @@ def signal_handler(sig, frame):
     if server_sock is not None:
         try:
             server_sock.close()
-        except IOError:
+        except IOError as e:
             print("I/O error occurred while closing server socket!")
+            print(e.message)
     if client_sock is not None:
         try:
             client_sock.close()
-        except IOError:
+        except IOError as e:
             print("I/O error occurred while closing client socket!")
+            print(e.message)
     stop_indi()
     sys.exit(0)
 
@@ -284,10 +309,12 @@ def start_hotspot():
                             hotspotpswd)))
             hotspot_enabled = True
             bt_send("Hotspot=True")
-        except ErrorReturnCode:
+        except ErrorReturnCode as e:
             log_err("Unable to start the hotspot!")
-    except ErrorReturnCode:
+            print(e.message)
+    except ErrorReturnCode as e:
         log_err("Unable to turn on Wi-Fi!")
+        print(e.message)
 
 
 def indiweb_start():
@@ -302,8 +329,9 @@ def indiweb_start():
     try:
         indiweb = sudo("-u", username, "indi-web", "-v",
                        _bg=True, _out=log_indi, _done=clean_indi)
-    except ErrorReturnCode:
+    except ErrorReturnCode as e:
         log_err("Error in INDI Web Manager!")
+        print(e.message)
     bt_send("INDI=True")
 
 
@@ -323,20 +351,20 @@ def stop_indi():
     if indiweb is not None:
         try:
             indiweb.terminate()
-        except (SignalException, OSError):
-            pass
+        except (SignalException, OSError) as e:
+            print(e.message)
         try:
             indiweb.kill_group()
-        except (SignalException, OSError):
-            pass
+        except (SignalException, OSError) as e:
+            print(e.message)
         indiweb = None
     try:
         for proc in running_procs():
             pname = proc.name()
             if pname == "indiserver" or pname.startswith("indi_"):
                 proc.kill()
-    except OSError:
-        pass
+    except OSError as e:
+        print(e.message)
 
 
 def clean_indi(cmd, success, exit_code):
