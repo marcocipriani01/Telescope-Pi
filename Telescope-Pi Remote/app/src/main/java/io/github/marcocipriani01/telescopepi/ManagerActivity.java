@@ -45,6 +45,40 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
     private Button connectHotspotButton;
     private Button connectWiFiButton;
 
+    private CompoundButton.OnCheckedChangeListener wifiSwitchListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if (isChecked) {
+                telescopePiApp.bluetooth.send("02");
+
+            } else {
+                telescopePiApp.bluetooth.send("01");
+            }
+        }
+    };
+    private CompoundButton.OnCheckedChangeListener hotspotSwitchListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if (isChecked) {
+                telescopePiApp.bluetooth.send("03");
+
+            } else {
+                telescopePiApp.bluetooth.send("04");
+            }
+        }
+    };
+    private CompoundButton.OnCheckedChangeListener indiSwitchListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if (isChecked) {
+                telescopePiApp.bluetooth.send("21");
+
+            } else {
+                telescopePiApp.bluetooth.send("20");
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,39 +126,9 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
             return;
         }
 
-        wifiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    telescopePiApp.bluetooth.send("02");
-
-                } else {
-                    telescopePiApp.bluetooth.send("01");
-                }
-            }
-        });
-        hotspotSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    telescopePiApp.bluetooth.send("03");
-
-                } else {
-                    telescopePiApp.bluetooth.send("04");
-                }
-            }
-        });
-        indiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    telescopePiApp.bluetooth.send("21");
-
-                } else {
-                    telescopePiApp.bluetooth.send("20");
-                }
-            }
-        });
+        wifiSwitch.setOnCheckedChangeListener(wifiSwitchListener);
+        hotspotSwitch.setOnCheckedChangeListener(hotspotSwitchListener);
+        indiSwitch.setOnCheckedChangeListener(indiSwitchListener);
 
         reloadIPButton.setEnabled(false);
         wifiSwitch.setEnabled(false);
@@ -334,7 +338,9 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                 } else if (message.startsWith("WiFi=")) {
                     isWifiOn = Boolean.valueOf(message.replace("WiFi=", "").toLowerCase());
                     connectWiFiButton.setEnabled(isWifiOn);
+                    wifiSwitch.setOnCheckedChangeListener(null);
                     wifiSwitch.setChecked(isWifiOn);
+                    wifiSwitch.setOnCheckedChangeListener(wifiSwitchListener);
                     hotspotSwitch.setEnabled(isWifiOn);
                     connectHotspotButton.setEnabled(isHotspotOn && isWifiOn);
 
@@ -343,7 +349,9 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
 
                 } else if (message.startsWith("Hotspot=")) {
                     isHotspotOn = Boolean.valueOf(message.replace("Hotspot=", "").toLowerCase());
+                    hotspotSwitch.setOnCheckedChangeListener(null);
                     hotspotSwitch.setChecked(isHotspotOn);
+                    hotspotSwitch.setOnCheckedChangeListener(hotspotSwitchListener);
                     connectHotspotButton.setEnabled(isHotspotOn);
                     wifiSwitch.setEnabled(!isHotspotOn);
                     connectWiFiButton.setEnabled(isWifiOn && !isHotspotOn);
@@ -362,7 +370,9 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                     }
 
                 } else if (message.startsWith("INDI=")) {
+                    indiSwitch.setOnCheckedChangeListener(null);
                     indiSwitch.setChecked(Boolean.valueOf(message.replace("INDI=", "").toLowerCase()));
+                    indiSwitch.setOnCheckedChangeListener(indiSwitchListener);
 
                 } else if (message.equals("WiFiAPs=[]")) {
                     Snackbar.make(findViewById(R.id.manager_coordinator), R.string.no_wifi_aps, Snackbar.LENGTH_SHORT).show();

@@ -149,10 +149,13 @@ def parse_rfcomm(line):
                     if len(net_scan) == 0:
                         bt_send("WiFiAPs=[]")
                     else:
-                        net_scan.sort(key=get_ap_quality)
-                        msg = "WiFiAPs=[" + net_scan[0].ssid + "(" + net_scan[0].quality + ")"
+                        net_scan.sort(key=get_ap_quality, reverse = True)
+                        msg = "WiFiAPs=[" + net_scan[0].ssid + \
+                            "(" + net_scan[0].quality + ")"
                         for i in range(1, min(len(net_scan), 10)):
-                            msg = msg + ", " + net_scan[i].ssid + "(" + net_scan[i].quality + ")"
+                            msg = msg + ", " + \
+                                net_scan[i].ssid + \
+                                "(" + net_scan[i].quality + ")"
                         bt_send(msg + "]")
                 except InterfaceError:
                     log_err("Unable to scan!")
