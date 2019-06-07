@@ -3,7 +3,7 @@ from wifi.exceptions import InterfaceError
 import sys
 import signal
 from gpiozero import Button
-import time
+from time import sleep
 from threading import Thread
 from psutil import process_iter as running_procs
 from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service,\
@@ -105,10 +105,12 @@ def main():
 
 
 def shutdown_button_thread():
-    if shutdown_button.is_pressed:
-        time.sleep(4)
+    while True:
         if shutdown_button.is_pressed:
-            shutdown()
+            sleep(4)
+            if shutdown_button.is_pressed:
+                shutdown()
+        sleep(1)
 
 
 def send_ip():
