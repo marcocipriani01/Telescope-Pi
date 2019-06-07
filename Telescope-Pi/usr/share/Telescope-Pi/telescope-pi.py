@@ -317,14 +317,16 @@ def stop_indi():
     """
     global indiweb
     print("Killing old INDI processes...")
-    try:
-        indiweb.terminate()
-    except (SignalException, OSError):
-        pass
-    try:
-        indiweb.kill_group()
-    except (SignalException, OSError):
-        pass
+    if indiweb is not None:
+        try:
+            indiweb.terminate()
+        except (SignalException, OSError):
+            pass
+        try:
+            indiweb.kill_group()
+        except (SignalException, OSError):
+            pass
+        indiweb = None
     try:
         for proc in running_procs():
             pname = proc.name()
@@ -332,7 +334,6 @@ def stop_indi():
                 proc.kill()
     except OSError:
         pass
-    indiweb = None
 
 
 def clean_indi(cmd, success, exit_code):
