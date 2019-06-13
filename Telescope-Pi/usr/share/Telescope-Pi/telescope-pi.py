@@ -3,6 +3,7 @@ from wifi.exceptions import InterfaceError
 import sys
 import signal
 from gpiozero import Button
+import RPi.GPIO as GPIO
 from time import sleep
 from threading import Thread
 from psutil import process_iter as running_procs
@@ -11,8 +12,6 @@ from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service,\
 from sh import sudo, nmcli, shutdown, reboot, ErrorReturnCode, SignalException
 import socket
 
-shutdown_button = Button(15)
-shutdown_thread_run = True
 type_pswd = False
 ap = None
 net_scan = None
@@ -35,6 +34,15 @@ def main():
     Params: <user> <network_interface> <hotspot_ssid> <hotspot_password>
     Creates the Bluetooth server and starts listening to clients.
     """
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(29, GPIO.OUT)
+    GPIO.output(29, GPIO.HIGH)
+    GPIO.setup(15, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.add_event_detect(15, GPIO.RISING, callback=button_callback, bouncetime=500)
+
+    signal.signal(signal.SIGINT, signal_handler)
+
     global net_interface
     global wifi_on
     global hotspot_enabled
@@ -45,10 +53,8 @@ def main():
     global username
     global type_pswd
     global indiweb
-    if len(sys.argv) == 5:
-        signal.signal(signal.SIGINT, signal_handler)
-        Thread(target=shutdown_button_thread).start()
 
+    if len(sys.argv) == 5:
         username = sys.argv[1]
         print("Username = " + username)
         net_interface = sys.argv[2]
@@ -57,61 +63,102 @@ def main():
         print("Hotspot SSID = " + hotspotssid)
         hotspotpswd = sys.argv[4]
         print("Hotspot Password = " + hotspotpswd)
-
-        server_sock = BluetoothSocket(RFCOMM)
-        server_sock.bind(("", PORT_ANY))
-        server_sock.listen(1)
-        port = server_sock.getsockname()[1]
         uuid = "b9029ed0-6d6a-4ff6-b318-215067a6d8b1"
         print("BT service UUID = " + uuid)
-        advertise_service(server_sock, "Telescope-Pi", service_id=uuid,
-                          service_classes=[uuid, SERIAL_PORT_CLASS], profiles=[SERIAL_PORT_PROFILE])
 
-        indiweb_start()
         turn_on_wifi()
         try:
             if len(Cell.all(net_interface)) == 0:
+                print("No Wi-Fi newtworks found, starting hotspot.")
                 start_hotspot()
-                print("No Wi-Fi newtworks found, hotspot started.")
         except InterfaceError as e:
             print("An error occurred while scanning Wi-Fi newtwork!")
             print(e.message)
 
-        while True:
-            print("Waiting for connection on RFCOMM channel %d" % port)
-            client_sock, client_info = server_sock.accept()
-            print("Accepted connection from " + str(client_info))
-            bt_send("NetInterface=" + net_interface +
-                    "\nWiFi=" + str(wifi_on) +
-                    "\nHotspot=" + str(hotspot_enabled) +
-                    "\nHotspotSSID=" + hotspotssid +
-                    "\nHotspotPswdType=WPA\nHotspotPswd=" + hotspotpswd +
-                    "\nINDI=" + str(indiweb is not None))
-            send_ip()
-            try:
-                while True:
-                    data = client_sock.recv(1024)
-                    if len(data) == 0:
-                        break
-                    for line in data.splitlines():
-                        parse_rfcomm(line.strip())
-            except Exception as e:
-                print(e.message)
-            print("Disconnected")
-            client_sock.close()
-            type_pswd = False
+        indiweb_start()
+
+        try:
+            server_sock = BluetoothSocket(RFCOMM)
+            server_sock.bind(("", PORT_ANY))
+            server_sock.listen(1)
+            port = server_sock.getsockname()[1]
+            advertise_service(server_sock, "Telescope-Pi", service_id=uuid, service_classes=[
+                              uuid, SERIAL_PORT_CLASS], profiles=[SERIAL_PORT_PROFILE])
+            while True:
+                print("Waiting for connection on RFCOMM channel %d" % port)
+                client_sock, client_info = server_sock.accept()
+                print("Accepted connection from " + str(client_info))
+                bt_send("NetInterface=" + net_interface +
+                        "\nWiFi=" + str(wifi_on) +
+                        "\nHotspot=" + str(hotspot_enabled) +
+                        "\nHotspotSSID=" + hotspotssid +
+                        "\nHotspotPswdType=WPA\nHotspotPswd=" + hotspotpswd +
+                        "\nINDI=" + str(indiweb is not None))
+                send_ip()
+                try:
+                    while True:
+                        data = client_sock.recv(1024)
+                        if len(data) == 0:
+                            break
+                        for line in data.splitlines():
+                            parse_rfcomm(line.strip())
+                except Exception as e:
+                    print(e.message)
+                print("Disconnected")
+                client_sock.close()
+                type_pswd = False
+        except BluetoothError as e:
+            print("No Bluetooth adapter found! Make sure the systemd service has \"Type=idle\".")
+            print("Error message: " + e.message)
+            print("Running in emergency mode!")
+            emergency_mode_led()
     else:
         print("Usage: \"sudo python hotspot-controller-bluetooth.py <user> <network_interface> <hotspot_ssid> <hotspot_password>\"")
-        exit(1)
+        print("Running in emergency mode!")
+        emergency_mode_led()
 
 
-def shutdown_button_thread():
-    while shutdown_thread_run is True:
-        if shutdown_button.is_pressed:
-            sleep(4)
-            if shutdown_button.is_pressed and shutdown_thread_run is True:
-                shutdown_pi()
-        sleep(1)
+def emergency_mode_led():
+    global indiweb
+    while True:
+        GPIO.output(29, GPIO.LOW)
+        sleep(0.1)
+        GPIO.output(29, GPIO.HIGH)
+        sleep(0.1)
+        if indiweb is not None:
+            GPIO.output(29, GPIO.LOW)
+            sleep(0.2)
+            GPIO.output(29, GPIO.HIGH)
+            sleep(0.8)
+
+
+def button_callback(channel):
+    stime = uptime()
+    GPIO.output(29, GPIO.LOW)
+    while GPIO.input(15) == 1:
+        pass
+    GPIO.output(29, GPIO.HIGH)
+    btime = uptime() - stime
+    if .1 <= btime < 2:
+        GPIO.output(29, GPIO.LOW)
+        sleep(0.1)
+        GPIO.output(29, GPIO.HIGH)
+        sleep(0.1)
+        turn_on_wifi()
+    elif 2 <= btime < 5:
+        for i in range(0, 2):
+            GPIO.output(29, GPIO.LOW)
+            sleep(0.1)
+            GPIO.output(29, GPIO.HIGH)
+            sleep(0.1)
+        indiweb_start()
+    elif btime >= 5:
+        for i in range(0, 3):
+            GPIO.output(29, GPIO.LOW)
+            sleep(0.1)
+            GPIO.output(29, GPIO.HIGH)
+            sleep(0.1)
+        shutdown_pi()
 
 
 def send_ip():
@@ -168,7 +215,7 @@ def parse_rfcomm(line):
                     if len(net_scan) == 0:
                         bt_send("WiFiAPs=[]")
                     else:
-                        net_scan.sort(key=get_ap_quality, reverse = True)
+                        net_scan.sort(key=get_ap_quality, reverse=True)
                         msg = "WiFiAPs=[" + net_scan[0].ssid + \
                             "(" + net_scan[0].quality + ")"
                         for i in range(1, min(len(net_scan), 10)):
@@ -250,7 +297,6 @@ def signal_handler(sig, frame):
     Handles the signals sent to this process.
     """
     print("Stopping Telescope-Pi...")
-    shutdown_thread_run = False
     global server_sock
     global client_sock
     if server_sock is not None:
@@ -336,6 +382,7 @@ def indiweb_start():
     except ErrorReturnCode as e:
         log_err("Error in INDI Web Manager!")
         print(e.message)
+        indiweb = None
     bt_send("INDI=True")
 
 
@@ -371,7 +418,7 @@ def stop_indi():
         print(e.message)
 
 
-def clean_indi(cmd, success, exit_code):
+def clean_indi(cmd=None, success=None, exit_code=None):
     """
     Makes the indiweb var equal to None
     """

@@ -45,10 +45,6 @@ function create_config {
   echo "$username $interface $hostname $pswd" > /etc/telescope-pi
 }
 
-echo "Stopping old services..."
-systemctl stop telescope-pi 2> /dev/null
-systemctl stop openfocuser 2> /dev/null
-
 if [[ -f "/etc/telescope-pi" ]]; then
   if (whiptail --title "Telescope-Pi" --yesno "Configuration files found. Keep using them?" 8 78); then
     echo "Using old configuration files..."
@@ -80,13 +76,6 @@ if [[ "$?" != "0" ]]; then
   echo "Error!"
   exit 5
 fi
-
-echo "Stopping Bluetooth services..."
-rfkill block bluetooth 2> /dev/null
-systemctl daemon-reload
-systemctl stop bluetooth 2> /dev/null
-systemctl stop var-run-sdp.path 2> /dev/null
-systemctl stop var-run-sdp.service 2> /dev/null
 
 echo "Updating Bluetooth configuration..."
 sed -i ':a;N;$!ba;s#ExecStart=/usr/lib/bluetooth/bluetoothd\n#ExecStart=/usr/lib/bluetooth/bluetoothd -C\nExecStartPost=/usr/bin/sdptool add SP\n#g' /etc/systemd/system/dbus-org.bluez.service

@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "Stopping services..."
+systemctl stop telescope-pi 2> /dev/null
+systemctl stop openfocuser 2> /dev/null
+rfkill block bluetooth 2> /dev/null
+systemctl stop bluetooth 2> /dev/null
+systemctl stop var-run-sdp.path 2> /dev/null
+systemctl stop var-run-sdp.service 2> /dev/null
+chmod -x /etc/update-motd.d/*
