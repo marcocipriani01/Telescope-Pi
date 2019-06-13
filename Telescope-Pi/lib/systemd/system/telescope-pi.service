@@ -3,7 +3,7 @@ Description=Raspberry Pi indiserver, network and power manager via Bluetooth
 StartLimitInterval=0
 
 [Service]
-Type=simple
+Type=idle
 Restart=always
 RestartSec=5
 User=root
