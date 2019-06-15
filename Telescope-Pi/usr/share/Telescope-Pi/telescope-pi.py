@@ -26,6 +26,7 @@ server_sock = None
 client_sock = None
 wifi_on = True
 led_thread_run = False
+emergency_led_run = True
 
 
 def main():
@@ -89,9 +90,9 @@ def main():
             Thread(target=led_thread).start()
             while True:
                 print("Waiting for connection on RFCOMM channel %d" % port)
-                shutdown_thread_run = True
+                led_thread_run = True
                 client_sock, client_info = server_sock.accept()
-                shutdown_thread_run = False
+                led_thread_run = False
                 print("Accepted connection from " + str(client_info))
                 bt_send("NetInterface=" + net_interface +
                         "\nWiFi=" + str(wifi_on) +
@@ -138,7 +139,7 @@ def led_thread():
 
 def emergency_mode_led():
     global indiweb
-    while True:
+    while emergency_led_run is True:
         GPIO.output(29, GPIO.LOW)
         sleep(0.1)
         GPIO.output(29, GPIO.HIGH)
@@ -152,8 +153,8 @@ def emergency_mode_led():
 
 def button_callback(channel):
     stime = uptime()
-    old_state = shutdown_thread_run
-    shutdown_thread_run = False
+    old_state = led_thread_run
+    led_thread_run = False
     GPIO.output(29, GPIO.LOW)
     while GPIO.input(15) == 1:
         pass
@@ -179,7 +180,7 @@ def button_callback(channel):
             GPIO.output(29, GPIO.HIGH)
             sleep(0.1)
         shutdown_pi()
-    shutdown_thread_run = old_state
+    led_thread_run = old_state
 
 
 def send_ip():
@@ -283,6 +284,8 @@ def parse_rfcomm(line):
 
 def shutdown_pi():
     log("Shutting down...")
+    led_thread_run = False
+    emergency_led_run = False
     shutdown("now")
 
 
@@ -318,6 +321,8 @@ def signal_handler(sig, frame):
     Handles the signals sent to this process.
     """
     print("Stopping Telescope-Pi...")
+    led_thread_run = False
+    emergency_led_run = False
     global server_sock
     global client_sock
     if server_sock is not None:
