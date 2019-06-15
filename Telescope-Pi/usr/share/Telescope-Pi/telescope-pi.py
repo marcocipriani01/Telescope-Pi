@@ -4,6 +4,7 @@ import sys
 import signal
 import RPi.GPIO as GPIO
 from time import sleep
+from time import time as uptime
 from threading import Thread
 from psutil import process_iter as running_procs
 from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service,\
@@ -132,6 +133,7 @@ def led_thread():
                 sleep(0.2)
         else:
             GPIO.output(29, GPIO.HIGH)
+        sleep(0.2)
 
 
 def emergency_mode_led():
