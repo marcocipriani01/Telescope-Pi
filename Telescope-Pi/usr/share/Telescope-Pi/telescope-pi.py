@@ -40,7 +40,7 @@ def main():
     GPIO.setup(29, GPIO.OUT)
     GPIO.output(29, GPIO.HIGH)
     GPIO.setup(15, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(15, GPIO.RISING, callback=button_callback, bouncetime=500)
+    GPIO.add_event_detect(15, GPIO.FALLING, callback=button_callback, bouncetime=500)
 
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -159,7 +159,7 @@ def button_callback(channel):
     old_state = led_thread_run
     led_thread_run = False
     GPIO.output(29, GPIO.LOW)
-    while GPIO.input(15) == 1:
+    while GPIO.input(15) is 0:
         pass
     GPIO.output(29, GPIO.HIGH)
     btime = uptime() - stime
