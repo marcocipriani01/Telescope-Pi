@@ -8,7 +8,7 @@ from time import time as uptime
 from threading import Thread
 from psutil import process_iter as running_procs
 from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service,\
-    SERIAL_PORT_CLASS, SERIAL_PORT_PROFILE
+    SERIAL_PORT_CLASS, SERIAL_PORT_PROFILE, BluetoothError
 from sh import sudo, nmcli, shutdown, reboot, ErrorReturnCode, SignalException
 import socket
 
@@ -40,7 +40,7 @@ def main():
     GPIO.setup(29, GPIO.OUT)
     GPIO.output(29, GPIO.HIGH)
     GPIO.setup(15, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(15, GPIO.FALLING, callback=button_callback, bouncetime=500)
+    Thread(target=button_thread).start()
 
     signal.signal(signal.SIGINT, signal_handler)
 
@@ -153,14 +153,17 @@ def emergency_mode_led():
             sleep(0.8)
 
 
-def button_callback(channel):
+def button_thread():
     global led_thread_run
-    stime = uptime()
-    old_state = led_thread_run
-    led_thread_run = False
-    GPIO.output(29, GPIO.LOW)
-    c = GPIO.wait_for_edge(15, GPIO.RISING, timeout=8000)
-    if c is not None:
+    while True:
+        while GPIO.input(15) is 1:
+            pass
+        stime = uptime()
+        old_state = led_thread_run
+        led_thread_run = False
+        GPIO.output(29, GPIO.LOW)
+        while GPIO.input(15) is 0:
+            pass
         btime = uptime() - stime
         if .1 <= btime < 2:
             GPIO.output(29, GPIO.LOW)
@@ -182,7 +185,7 @@ def button_callback(channel):
                 GPIO.output(29, GPIO.HIGH)
                 sleep(0.1)
             shutdown_pi()
-    led_thread_run = old_state
+        led_thread_run = old_state
 
 
 def send_ip():
