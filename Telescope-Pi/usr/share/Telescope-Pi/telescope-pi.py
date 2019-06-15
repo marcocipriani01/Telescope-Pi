@@ -23,7 +23,6 @@ hotspot_enabled = False
 hotspotssid = None
 hotspotpswd = None
 server_sock = None
-client_sock = None
 wifi_on = True
 led_thread_run = False
 emergency_led_run = True
@@ -55,6 +54,7 @@ def main():
     global username
     global type_pswd
     global indiweb
+    global led_thread_run
 
     if len(sys.argv) == 5:
         username = sys.argv[1]
@@ -75,7 +75,7 @@ def main():
                 start_hotspot()
         except InterfaceError as e:
             print("An error occurred while scanning Wi-Fi newtwork!")
-            print(e.message)
+            print(str(e))
 
         indiweb_start()
 
@@ -109,13 +109,13 @@ def main():
                         for line in data.splitlines():
                             parse_rfcomm(line.strip())
                 except Exception as e:
-                    print(e.message)
+                    print(str(e))
                 print("Disconnected")
                 client_sock.close()
                 type_pswd = False
         except BluetoothError as e:
             print("No Bluetooth adapter found! Make sure the systemd service has \"Type=idle\".")
-            print("Error message: " + e.message)
+            print("Error message: " + str(e))
             print("Running in emergency mode!")
             emergency_mode_led()
     else:
@@ -125,6 +125,7 @@ def main():
 
 
 def led_thread():
+    global led_thread_run
     while True:
         if led_thread_run is True:
             GPIO.output(29, GPIO.HIGH)
@@ -139,6 +140,7 @@ def led_thread():
 
 def emergency_mode_led():
     global indiweb
+    global emergency_led_run
     while emergency_led_run is True:
         GPIO.output(29, GPIO.LOW)
         sleep(0.1)
@@ -152,6 +154,7 @@ def emergency_mode_led():
 
 
 def button_callback(channel):
+    global led_thread_run
     stime = uptime()
     old_state = led_thread_run
     led_thread_run = False
@@ -209,7 +212,7 @@ def parse_rfcomm(line):
                 send_ip()
             except ErrorReturnCode as e:
                 log_err("Unable to connect!")
-                print(e.message)
+                print(str(e))
     else:
         if len(line) == 2:
             if line == "01":
@@ -221,7 +224,7 @@ def parse_rfcomm(line):
                     wifi_on = False
                 except ErrorReturnCode as e:
                     log_err("Unable to turn off Wi-Fi!")
-                    print(e.message)
+                    print(str(e))
             elif line == "02":
                 turn_on_wifi()
             elif line == "03":
@@ -247,7 +250,7 @@ def parse_rfcomm(line):
                         bt_send(msg + "]")
                 except InterfaceError as e:
                     log_err("Unable to scan!")
-                    print(e.message)
+                    print(str(e))
             elif line == "07":
                 shutdown_pi()
             elif line == "08":
@@ -283,6 +286,8 @@ def parse_rfcomm(line):
 
 
 def shutdown_pi():
+    global led_thread_run
+    global emergency_led_run
     log("Shutting down...")
     led_thread_run = False
     emergency_led_run = False
@@ -298,7 +303,7 @@ def turn_off_hotspot():
         bt_send("Hotspot=False")
     except ErrorReturnCode as e:
         log_err("Unable to stop the hotspot!")
-        print(e.message)
+        print(str(e))
 
 
 def turn_on_wifi():
@@ -309,7 +314,7 @@ def turn_on_wifi():
         wifi_on = True
     except ErrorReturnCode as e:
         log_err("Unable to turn on Wi-Fi!")
-        print(e.message)
+        print(str(e))
 
 
 def get_ap_quality(val):
@@ -320,23 +325,25 @@ def signal_handler(sig, frame):
     """
     Handles the signals sent to this process.
     """
+    global led_thread_run
+    global emergency_led_run
+    global server_sock
+    global client_sock
     print("Stopping Telescope-Pi...")
     led_thread_run = False
     emergency_led_run = False
-    global server_sock
-    global client_sock
     if server_sock is not None:
         try:
             server_sock.close()
         except IOError as e:
             print("I/O error occurred while closing server socket!")
-            print(e.message)
+            print(str(e))
     if client_sock is not None:
         try:
             client_sock.close()
         except IOError as e:
             print("I/O error occurred while closing client socket!")
-            print(e.message)
+            print(str(e))
     stop_indi()
     sys.exit(0)
 
@@ -387,10 +394,10 @@ def start_hotspot():
             bt_send("Hotspot=True")
         except ErrorReturnCode as e:
             log_err("Unable to start the hotspot!")
-            print(e.message)
+            print(str(e))
     except ErrorReturnCode as e:
         log_err("Unable to turn on Wi-Fi!")
-        print(e.message)
+        print(str(e))
 
 
 def indiweb_start():
@@ -407,7 +414,7 @@ def indiweb_start():
                        _bg=True, _out=log_indi, _done=clean_indi)
     except ErrorReturnCode as e:
         log_err("Error in INDI Web Manager!")
-        print(e.message)
+        print(str(e))
         indiweb = None
     bt_send("INDI=True")
 
@@ -429,11 +436,11 @@ def stop_indi():
         try:
             indiweb.terminate()
         except (SignalException, OSError) as e:
-            print(e.message)
+            print(str(e))
         try:
             indiweb.kill_group()
         except (SignalException, OSError) as e:
-            print(e.message)
+            print(str(e))
         indiweb = None
     try:
         for proc in running_procs():
@@ -441,7 +448,7 @@ def stop_indi():
             if pname == "indiserver" or pname.startswith("indi_"):
                 proc.kill()
     except OSError as e:
-        print(e.message)
+        print(str(e))
 
 
 def clean_indi(cmd=None, success=None, exit_code=None):
