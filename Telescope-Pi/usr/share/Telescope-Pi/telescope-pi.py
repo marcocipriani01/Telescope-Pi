@@ -2,7 +2,6 @@ from wifi import Cell
 from wifi.exceptions import InterfaceError
 import sys
 import signal
-from gpiozero import Button
 import RPi.GPIO as GPIO
 from time import sleep
 from threading import Thread
@@ -25,6 +24,7 @@ hotspotpswd = None
 server_sock = None
 client_sock = None
 wifi_on = True
+led_thread_run = False
 
 
 def main():
@@ -38,7 +38,7 @@ def main():
     GPIO.setwarnings(False)
     GPIO.setup(29, GPIO.OUT)
     GPIO.output(29, GPIO.HIGH)
-    GPIO.setup(15, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(15, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.add_event_detect(15, GPIO.RISING, callback=button_callback, bouncetime=500)
 
     signal.signal(signal.SIGINT, signal_handler)
@@ -84,9 +84,13 @@ def main():
             port = server_sock.getsockname()[1]
             advertise_service(server_sock, "Telescope-Pi", service_id=uuid, service_classes=[
                               uuid, SERIAL_PORT_CLASS], profiles=[SERIAL_PORT_PROFILE])
+
+            Thread(target=led_thread).start()
             while True:
                 print("Waiting for connection on RFCOMM channel %d" % port)
+                shutdown_thread_run = True
                 client_sock, client_info = server_sock.accept()
+                shutdown_thread_run = False
                 print("Accepted connection from " + str(client_info))
                 bt_send("NetInterface=" + net_interface +
                         "\nWiFi=" + str(wifi_on) +
@@ -118,6 +122,18 @@ def main():
         emergency_mode_led()
 
 
+def led_thread():
+    while True:
+        if led_thread_run is True:
+            GPIO.output(29, GPIO.HIGH)
+            sleep(0.8)
+            if led_thread_run is True:
+                GPIO.output(29, GPIO.LOW)
+                sleep(0.2)
+        else:
+            GPIO.output(29, GPIO.HIGH)
+
+
 def emergency_mode_led():
     global indiweb
     while True:
@@ -134,6 +150,8 @@ def emergency_mode_led():
 
 def button_callback(channel):
     stime = uptime()
+    old_state = shutdown_thread_run
+    shutdown_thread_run = False
     GPIO.output(29, GPIO.LOW)
     while GPIO.input(15) == 1:
         pass
@@ -159,6 +177,7 @@ def button_callback(channel):
             GPIO.output(29, GPIO.HIGH)
             sleep(0.1)
         shutdown_pi()
+    shutdown_thread_run = old_state
 
 
 def send_ip():

@@ -55,6 +55,8 @@ else
   create_config
 fi
 
+chmod +x /etc/update-motd.d/1-telescope-pi
+
 echo "Updating network configuration..."
 hostname="$(awk '{print $3}' /etc/telescope-pi)"
 if [[ -z "$hostname" ]]; then
@@ -89,9 +91,6 @@ sed -i 's#AutoEnable=false#AutoEnable=true#g' /etc/bluetooth/main.conf
 echo "Adding $username and root to the \"bluetooth\" group..."
 usermod -aG bluetooth "root"
 usermod -aG bluetooth "$username"
-
-echo "Setting wallpaper..."
-DISPLAY=:0.0 pcmanfm --set-wallpaper "/usr/share/wallpapers/Telescope-Pi/Telescope-Pi.jpg"
 
 echo "Updating services..."
 sed -i "s/USERNAME/$username/g" /lib/systemd/system/openfocuser.service

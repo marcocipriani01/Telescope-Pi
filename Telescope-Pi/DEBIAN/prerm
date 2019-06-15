@@ -7,4 +7,3 @@ systemctl disable telescope-pi 2> /dev/null
 systemctl disable openfocuser 2> /dev/null
 systemctl disable var-run-sdp.path 2> /dev/null
 systemctl disable var-run-sdp.service 2> /dev/null
-DISPLAY=:0.0 pcmanfm --set-wallpaper "/usr/share/desktop-base/active-theme/wallpaper/contents/images/1920x1080.svg"
