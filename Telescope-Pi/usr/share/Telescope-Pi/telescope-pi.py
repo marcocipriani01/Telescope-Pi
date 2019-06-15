@@ -159,30 +159,29 @@ def button_callback(channel):
     old_state = led_thread_run
     led_thread_run = False
     GPIO.output(29, GPIO.LOW)
-    while GPIO.input(15) is 0:
-        pass
-    GPIO.output(29, GPIO.HIGH)
-    btime = uptime() - stime
-    if .1 <= btime < 2:
-        GPIO.output(29, GPIO.LOW)
-        sleep(0.1)
-        GPIO.output(29, GPIO.HIGH)
-        sleep(0.1)
-        turn_on_wifi()
-    elif 2 <= btime < 5:
-        for i in range(0, 2):
+    c = GPIO.wait_for_edge(15, GPIO.RISING, timeout=8000)
+    if c is not None:
+        btime = uptime() - stime
+        if .1 <= btime < 2:
             GPIO.output(29, GPIO.LOW)
             sleep(0.1)
             GPIO.output(29, GPIO.HIGH)
             sleep(0.1)
-        indiweb_start()
-    elif btime >= 5:
-        for i in range(0, 3):
-            GPIO.output(29, GPIO.LOW)
-            sleep(0.1)
-            GPIO.output(29, GPIO.HIGH)
-            sleep(0.1)
-        shutdown_pi()
+            turn_on_wifi()
+        elif 2 <= btime < 5:
+            for i in range(0, 2):
+                GPIO.output(29, GPIO.LOW)
+                sleep(0.1)
+                GPIO.output(29, GPIO.HIGH)
+                sleep(0.1)
+            indiweb_start()
+        elif btime >= 5:
+            for i in range(0, 3):
+                GPIO.output(29, GPIO.LOW)
+                sleep(0.1)
+                GPIO.output(29, GPIO.HIGH)
+                sleep(0.1)
+            shutdown_pi()
     led_thread_run = old_state
 
 
