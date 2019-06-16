@@ -470,6 +470,7 @@ def signal_handler(sig, frame):
     global emergency_led_run
     global server_sock
     global client_sock
+    GPIO.output(29, GPIO.HIGH)
     print("Closing connections...")
     led_thread_run = False
     emergency_led_run = False
