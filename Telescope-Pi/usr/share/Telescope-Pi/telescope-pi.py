@@ -8,8 +8,7 @@ from time import time as uptime
 import RPi.GPIO as GPIO
 from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service, SERIAL_PORT_CLASS, SERIAL_PORT_PROFILE, \
     BluetoothError
-from psutil import process_iter as running_procs
-from sh import sudo, nmcli, shutdown, reboot, ErrorReturnCode, SignalException
+from sh import sudo, nmcli, shutdown, reboot, bash, ErrorReturnCode, SignalException
 from wifi import Cell
 from wifi.exceptions import InterfaceError
 
@@ -437,11 +436,8 @@ def stop_indi():
         indiweb = None
     print("Killing other INDI processes...")
     try:
-        for proc in running_procs():
-            pname = proc.name()
-            if pname == "indiserver" or pname == "indi-web"  or pname.startswith("indi_"):
-                proc.kill()
-    except OSError as e:
+        bash("-c", "pgrep indi | xargs -L1 -r kill")
+    except ErrorReturnCode as e:
         print(str(e))
     print("Done.")
 
