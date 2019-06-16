@@ -1,4 +1,10 @@
 #!/bin/bash
+function ctrl_c() {
+    sudo pgrep indi | xargs -L1 -r kill
+    exit 0
+}
+
+trap ctrl_c INT
 hostname="$(awk '{print $3}' /etc/telescope-pi)"
 sudo ch-hostname "$hostname" > /dev/null
 interface="$(awk '{print $2}' /etc/telescope-pi)"

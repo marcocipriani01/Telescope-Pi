@@ -112,6 +112,7 @@ def main():
                     print(str(e))
                 print("Disconnected")
                 client_sock.close()
+                client_sock = None
                 type_pswd = False
         except BluetoothError as e:
             print("No Bluetooth adapter found! Make sure the systemd service has \"Type=idle\".")
@@ -471,17 +472,18 @@ def signal_handler(sig, frame):
     print("Stopping Telescope-Pi...")
     led_thread_run = False
     emergency_led_run = False
+    if client_sock is not None:
+        try:
+            client_sock.close()
+            client_sock = None
+        except IOError as e:
+            print("I/O error occurred while closing client socket!")
+            print(str(e))
     if server_sock is not None:
         try:
             server_sock.close()
         except IOError as e:
             print("I/O error occurred while closing server socket!")
-            print(str(e))
-    if client_sock is not None:
-        try:
-            client_sock.close()
-        except IOError as e:
-            print("I/O error occurred while closing client socket!")
             print(str(e))
     stop_indi()
     sys.exit(0)
