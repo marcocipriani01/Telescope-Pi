@@ -487,6 +487,7 @@ def signal_handler(sig, frame):
             print(str(e))
     stop_indi()
     sys.exit(0)
+    raise SystemExit
 
 
 if __name__ == "__main__":
