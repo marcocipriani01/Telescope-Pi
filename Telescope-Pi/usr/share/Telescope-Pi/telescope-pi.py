@@ -236,13 +236,13 @@ def button_thread():
     global led_thread_run
     while True:
         while GPIO.input(15) == 1:
-            pass
+            sleep(0.2)
         stime = uptime()
         old_state = led_thread_run
         led_thread_run = False
         GPIO.output(29, GPIO.LOW)
         while GPIO.input(15) == 0:
-            pass
+            sleep(0.1)
         btime = uptime() - stime
         if .1 <= btime < 2:
             GPIO.output(29, GPIO.LOW)
