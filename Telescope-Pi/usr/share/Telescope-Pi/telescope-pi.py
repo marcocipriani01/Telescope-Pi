@@ -235,13 +235,13 @@ def parse_rfcomm(line):
 def button_thread():
     global led_thread_run
     while True:
-        while GPIO.input(15) is 1:
+        while GPIO.input(15) == 1:
             pass
         stime = uptime()
         old_state = led_thread_run
         led_thread_run = False
         GPIO.output(29, GPIO.LOW)
-        while GPIO.input(15) is 0:
+        while GPIO.input(15) == 0:
             pass
         btime = uptime() - stime
         if .1 <= btime < 2:
@@ -424,7 +424,7 @@ def stop_indi():
     Kills indiweb if running.
     """
     global indiweb
-    print("Killing old INDI processes...")
+    print("Stopping INDI Web Manager...")
     if indiweb is not None:
         try:
             indiweb.terminate()
@@ -435,10 +435,11 @@ def stop_indi():
         except (SignalException, OSError) as e:
             print(str(e))
         indiweb = None
+    print("Killing other INDI processes...")
     try:
         for proc in running_procs():
             pname = proc.name()
-            if pname == "indiserver" or pname.startswith("indi_"):
+            if pname == "indiserver" or pname == "indi-web"  or pname.startswith("indi_"):
                 proc.kill()
     except OSError as e:
         print(str(e))

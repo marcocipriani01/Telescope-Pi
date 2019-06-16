@@ -73,7 +73,7 @@ if [[ -z "$username" ]]; then
 fi
 
 echo "Installing python packages..."
-pip3 install indiweb pybluez wifi sh
+pip3 install indiweb pybluez wifi sh psutil
 if [[ "$?" != "0" ]]; then
   echo "Error!"
   exit 5
