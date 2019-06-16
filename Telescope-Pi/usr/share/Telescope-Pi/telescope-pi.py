@@ -1,6 +1,7 @@
 import signal
 import socket
 import sys
+from os import _exit as bye
 from threading import Thread
 from time import sleep
 from time import time as uptime
@@ -20,8 +21,8 @@ client_sock = None
 net_interface = None
 username = None
 hotspot_enabled = False
-hotspotssid = None
-hotspotpswd = None
+hotspot_ssid = None
+hotspot_pswd = None
 server_sock = None
 wifi_on = True
 led_thread_run = False
@@ -47,8 +48,8 @@ def main():
     global net_interface
     global wifi_on
     global hotspot_enabled
-    global hotspotssid
-    global hotspotpswd
+    global hotspot_ssid
+    global hotspot_pswd
     global server_sock
     global client_sock
     global username
@@ -61,17 +62,17 @@ def main():
         print("Username = " + username)
         net_interface = sys.argv[2]
         print("Network interface = " + net_interface)
-        hotspotssid = sys.argv[3]
-        print("Hotspot SSID = " + hotspotssid)
-        hotspotpswd = sys.argv[4]
-        print("Hotspot Password = " + hotspotpswd)
+        hotspot_ssid = sys.argv[3]
+        print("Hotspot SSID = " + hotspot_ssid)
+        hotspot_pswd = sys.argv[4]
+        print("Hotspot Password = " + hotspot_pswd)
         uuid = "b9029ed0-6d6a-4ff6-b318-215067a6d8b1"
         print("BT service UUID = " + uuid)
 
         turn_on_wifi()
         try:
             if len(Cell.all(net_interface)) == 0:
-                print("No Wi-Fi newtworks found, starting hotspot.")
+                print("No Wi-Fi networks found, starting hotspot.")
                 start_hotspot()
         except InterfaceError as e:
             print("An error occurred while scanning Wi-Fi newtwork!")
@@ -97,8 +98,8 @@ def main():
                 bt_send("NetInterface=" + net_interface +
                         "\nWiFi=" + str(wifi_on) +
                         "\nHotspot=" + str(hotspot_enabled) +
-                        "\nHotspotSSID=" + hotspotssid +
-                        "\nHotspotPswdType=WPA\nHotspotPswd=" + hotspotpswd +
+                        "\nHotspotSSID=" + hotspot_ssid +
+                        "\nHotspotPswdType=WPA\nHotspotPswd=" + hotspot_pswd +
                         "\nINDI=" + str(indiweb is not None))
                 send_ip()
                 try:
@@ -120,8 +121,8 @@ def main():
             print("Running in emergency mode!")
             emergency_mode_led()
     else:
-        print(
-            "Usage: \"sudo python hotspot-controller-bluetooth.py <user> <network_interface> <hotspot_ssid> <hotspot_password>\"")
+        print("Usage: \"sudo python hotspot-controller-bluetooth.py" +
+              "<user> <network_interface> <hotspot_ssid> <hotspot_password>\"")
         print("Running in emergency mode!")
         emergency_mode_led()
 
@@ -237,27 +238,27 @@ def button_thread():
     while True:
         while GPIO.input(15) == 1:
             sleep(0.2)
-        stime = uptime()
+        s_time = uptime()
         old_state = led_thread_run
         led_thread_run = False
         GPIO.output(29, GPIO.LOW)
         while GPIO.input(15) == 0:
             sleep(0.1)
-        btime = uptime() - stime
-        if .1 <= btime < 2:
+        c_time = uptime() - s_time
+        if .1 <= c_time < 2:
             GPIO.output(29, GPIO.LOW)
             sleep(0.1)
             GPIO.output(29, GPIO.HIGH)
             sleep(0.1)
             turn_on_wifi()
-        elif 2 <= btime < 5:
+        elif 2 <= c_time < 5:
             for i in range(0, 2):
                 GPIO.output(29, GPIO.LOW)
                 sleep(0.1)
                 GPIO.output(29, GPIO.HIGH)
                 sleep(0.1)
             indiweb_start()
-        elif btime >= 5:
+        elif c_time >= 5:
             for i in range(0, 3):
                 GPIO.output(29, GPIO.LOW)
                 sleep(0.1)
@@ -325,8 +326,8 @@ def start_hotspot():
     """
     Starts the hotspot using nmcli.
     """
-    global hotspotssid
-    global hotspotpswd
+    global hotspot_ssid
+    global hotspot_pswd
     global hotspot_enabled
     global wifi_on
     try:
@@ -339,9 +340,9 @@ def start_hotspot():
         print("Starting hotspot...")
         bt_send("Busy=Starting hotspot...")
         try:
-            print(str(nmcli("device", "wifi", "hotspot", "con-name", hotspotssid,
-                            "ssid", hotspotssid, "band", "bg", "password",
-                            hotspotpswd)))
+            print(str(nmcli("device", "wifi", "hotspot", "con-name", hotspot_ssid,
+                            "ssid", hotspot_ssid, "band", "bg", "password",
+                            hotspot_pswd)))
             hotspot_enabled = True
             bt_send("Hotspot=True")
             print("Done.")
@@ -358,7 +359,7 @@ def stop_hotspot():
     bt_send("Busy=Stopping hotspot...")
     print("Stopping hotspot...")
     try:
-        print(str(nmcli("connection", "down", hotspotssid)))
+        print(str(nmcli("connection", "down", hotspot_ssid)))
         hotspot_enabled = False
         bt_send("Hotspot=False")
         print("Done.")
@@ -469,7 +470,7 @@ def signal_handler(sig, frame):
     global emergency_led_run
     global server_sock
     global client_sock
-    print("Stopping Telescope-Pi...")
+    print("Closing connections...")
     led_thread_run = False
     emergency_led_run = False
     if client_sock is not None:
@@ -486,8 +487,8 @@ def signal_handler(sig, frame):
             print("I/O error occurred while closing server socket!")
             print(str(e))
     stop_indi()
-    sys.exit(0)
-    raise SystemExit
+    print("Exiting...")
+    bye(0)
 
 
 if __name__ == "__main__":
