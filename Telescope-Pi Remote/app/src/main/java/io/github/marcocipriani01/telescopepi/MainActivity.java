@@ -20,7 +20,7 @@ import static io.github.marcocipriani01.telescopepi.TelescopePiApp.INTENT_DEVICE
 
 /**
  * @author marcocipriani01
- * @version 1.0
+ * @version 1.1
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setSupportActionBar(this.<Toolbar>findViewById(R.id.main_toolbar));
 
-        FloatingActionButton fab = findViewById(R.id.add_dev_fab);
+        FloatingActionButton fab = findViewById(R.id.about_fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -50,7 +50,11 @@ public class MainActivity extends AppCompatActivity {
         errorDialog.setCancelable(false);
         errorDialog.setTitle(R.string.app_name);
         errorDialog.setIcon(R.drawable.error);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
         // Bluetooth
         try {
             telescopePiApp.initBluetooth();

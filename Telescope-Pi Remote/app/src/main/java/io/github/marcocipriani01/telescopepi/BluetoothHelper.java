@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,18 +18,19 @@ import java.util.UUID;
 
 /**
  * @author marcocipriani01
- * @version 1.0
+ * @version 1.1
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
 public class BluetoothHelper {
 
     public static final int INTENT_ENABLE_BT = 10;
+    private static final String TAG = "BluetoothHelper";
     private static final UUID DEFAULT_UUID = UUID.fromString("b9029ed0-6d6a-4ff6-b318-215067a6d8b1");
     private boolean isConnected = false;
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothSocket bluetoothSocket;
     private BluetoothDevice bluetoothDevice;
+    private ReceiveThread receiveThread;
     private ArrayList<BluetoothListener> listeners = new ArrayList<>();
     private BufferedReader input;
     private OutputStream output;
@@ -50,10 +52,6 @@ public class BluetoothHelper {
         activity.startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), INTENT_ENABLE_BT);
     }
 
-    public ArrayList<BluetoothListener> getListeners() {
-        return listeners;
-    }
-
     public void enableBluetooth() {
         if (!bluetoothAdapter.isEnabled()) {
             bluetoothAdapter.enable();
@@ -70,8 +68,12 @@ public class BluetoothHelper {
         if (address == null) {
             throw new NullPointerException("Null Bluetooth address!");
         }
-        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
-        new ConnectThread(device).start();
+        try {
+            new ConnectThread(bluetoothAdapter.getRemoteDevice(address)).start();
+
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Connection thread aborted.", e);
+        }
     }
 
     public void connectWithName(String name) {
@@ -88,27 +90,17 @@ public class BluetoothHelper {
         if (device == null) {
             throw new NullPointerException("Null Bluetooth device!");
         }
-        new ConnectThread(device).start();
+        try {
+            new ConnectThread(device).start();
+
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Connection thread aborted.", e);
+        }
     }
 
     public void disconnect() {
-        try {
-            input.close();
-            output.close();
-            bluetoothSocket.close();
-            bluetoothDevice = null;
-            bluetoothSocket = null;
-            input = null;
-            output = null;
-            isConnected = false;
-            for (BluetoothListener listener : listeners) {
-                listener.onDisconnection(bluetoothDevice);
-            }
-
-        } catch (IOException e) {
-            for (BluetoothListener listener : listeners) {
-                listener.onError(e);
-            }
+        if (isConnected) {
+            new DisconnectThread().start();
         }
     }
 
@@ -121,6 +113,7 @@ public class BluetoothHelper {
             output.write((message + "\n").getBytes());
 
         } catch (IOException e) {
+            Log.e(TAG, "Error while sending data. Disconnecting...", e);
             for (BluetoothListener listener : listeners) {
                 listener.onError(e);
             }
@@ -154,8 +147,11 @@ public class BluetoothHelper {
     }
 
     public void addListener(BluetoothListener listener) {
-        if (listener != null) {
+        if (listener != null && !listeners.contains(listener)) {
             listeners.add(listener);
+
+        } else {
+            throw new IllegalArgumentException("Listener null or already in the list!");
         }
     }
 
@@ -186,17 +182,20 @@ public class BluetoothHelper {
         public void run() {
             String message;
             try {
-                while ((message = input.readLine()) != null) {
+                while ((message = input.readLine()) != null && !isInterrupted()) {
                     for (BluetoothListener listener : listeners) {
                         listener.onMessage(message);
                     }
                 }
 
             } catch (IOException e) {
-                for (BluetoothListener listener : listeners) {
-                    listener.onError(e);
+                if (!isInterrupted()) {
+                    Log.e(TAG, "Reading thread error. Disconnecting...", e);
+                    for (BluetoothListener listener : listeners) {
+                        listener.onError(e);
+                    }
+                    disconnect();
                 }
-                disconnect();
             }
         }
     }
@@ -210,9 +209,12 @@ public class BluetoothHelper {
                 // BluetoothHelper.this.bluetoothSocket = device.createInsecureRfcommSocketToServiceRecord(DEFAULT_UUID);
 
             } catch (IOException e) {
+                Log.e(TAG, "Connection error.", e);
                 for (BluetoothListener listener : listeners) {
                     listener.onConnectionError(bluetoothDevice, e);
                 }
+                BluetoothHelper.this.bluetoothDevice = null;
+                throw new IllegalStateException("Unable to connect!");
             }
         }
 
@@ -223,23 +225,68 @@ public class BluetoothHelper {
                 bluetoothSocket.connect();
                 output = bluetoothSocket.getOutputStream();
                 input = new BufferedReader(new InputStreamReader(bluetoothSocket.getInputStream()));
-                new ReceiveThread().start();
+                receiveThread = new ReceiveThread();
+                receiveThread.start();
                 isConnected = true;
                 for (BluetoothListener listener : listeners) {
                     listener.onConnection(bluetoothDevice);
                 }
 
             } catch (IOException e) {
+                Log.e(TAG, "Connection error.", e);
                 for (BluetoothListener listener : listeners) {
                     listener.onConnectionError(bluetoothDevice, e);
                 }
                 try {
+                    if (receiveThread != null) {
+                        receiveThread.interrupt();
+                        receiveThread = null;
+                    }
                     bluetoothSocket.close();
+                    bluetoothSocket = null;
+                    bluetoothDevice = null;
+                    input = null;
+                    output = null;
+                    isConnected = false;
 
-                } catch (IOException closeException) {
+                } catch (IOException e1) {
+                    Log.e(TAG, "Disconnection error.", e);
                     for (BluetoothListener listener : listeners) {
                         listener.onError(e);
                     }
+                }
+            }
+        }
+    }
+
+    private class DisconnectThread extends Thread {
+
+        DisconnectThread() {
+
+        }
+
+        @Override
+        public void run() {
+            try {
+                if (receiveThread != null) {
+                    receiveThread.interrupt();
+                    receiveThread = null;
+                }
+                bluetoothSocket.close();
+                bluetoothSocket = null;
+                input = null;
+                output = null;
+                isConnected = false;
+                for (BluetoothListener listener : listeners) {
+                    listener.onDisconnection(bluetoothDevice);
+                }
+                bluetoothDevice = null;
+                listeners.clear();
+
+            } catch (IOException e) {
+                Log.e(TAG, "Disconnection error.", e);
+                for (BluetoothListener listener : listeners) {
+                    listener.onError(e);
                 }
             }
         }
