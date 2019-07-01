@@ -384,7 +384,13 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
                     connectHotspotButton.setEnabled(isHotspotOn && isWifiOn);
 
                 } else if (message.startsWith("IP=")) {
-                    ipLabel.setText(message.replace("IP=", ""));
+                    String ip = message.replace("IP=", "");
+                    if (ip.equals("null")) {
+                        ipLabel.setText(R.string.unknown);
+
+                    } else {
+                        ipLabel.setText(ip);
+                    }
 
                 } else if (message.startsWith("Hotspot=")) {
                     isHotspotOn = Boolean.valueOf(message.replace("Hotspot=", "").toLowerCase());

@@ -316,10 +316,14 @@ def get_ap_quality(val):
 
 
 def send_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    bt_send("IP=" + s.getsockname()[0])
-    s.close()
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        bt_send("IP=" + s.getsockname()[0])
+        s.close()
+    except socket.error as e:
+        bt_send("IP=null")
+        print(str(e))
 
 
 def start_hotspot():
