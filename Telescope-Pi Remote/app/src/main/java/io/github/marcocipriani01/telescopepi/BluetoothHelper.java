@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
@@ -23,6 +22,7 @@ import java.util.UUID;
 public class BluetoothHelper {
 
     public static final int INTENT_ENABLE_BT = 10;
+    public static final int INTENT_DISCOVERABLE = 11;
     private static final String TAG = "BluetoothHelper";
     private static final UUID DEFAULT_UUID = UUID.fromString("b9029ed0-6d6a-4ff6-b318-215067a6d8b1");
     private boolean isConnected = false;
@@ -42,10 +42,10 @@ public class BluetoothHelper {
         }
     }
 
-    public static void requestDiscoverable(Context context) {
+    public static void requestDiscoverable(Activity activity) {
         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-        context.startActivity(discoverableIntent);
+        activity.startActivityForResult(discoverableIntent, INTENT_DISCOVERABLE);
     }
 
     public static void requestBluetoothOn(Activity activity) {

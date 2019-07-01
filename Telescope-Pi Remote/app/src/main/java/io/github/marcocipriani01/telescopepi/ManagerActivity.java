@@ -177,6 +177,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
             public void onClick(DialogInterface dialog, int which) {
                 btHelper.send("07");
                 dialog.dismiss();
+                finish();
             }
         });
         alert.show();
@@ -198,6 +199,7 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
             public void onClick(DialogInterface dialog, int which) {
                 btHelper.send("08");
                 dialog.dismiss();
+                finish();
             }
         });
         alert.show();
@@ -333,17 +335,6 @@ public class ManagerActivity extends AppCompatActivity implements BluetoothHelpe
         }
         return super.onOptionsItemSelected(item);
     }
-
-   /* @Override
-    public void finish() {
-        exitActivity();
-        //finish();
-    }*/
-
-    /*@Override
-    public void onBackPressed() {
-        exitActivity();
-    }*/
 
     @Override
     public void onMessage(final String message) {

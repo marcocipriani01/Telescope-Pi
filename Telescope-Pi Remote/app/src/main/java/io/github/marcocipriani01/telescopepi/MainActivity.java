@@ -16,6 +16,8 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import static io.github.marcocipriani01.telescopepi.BluetoothHelper.INTENT_DISCOVERABLE;
+import static io.github.marcocipriani01.telescopepi.BluetoothHelper.INTENT_ENABLE_BT;
 import static io.github.marcocipriani01.telescopepi.TelescopePiApp.INTENT_DEVICE;
 
 /**
@@ -28,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private AlertDialog.Builder errorDialog;
     private ListView btDevicesListView;
     private TelescopePiApp telescopePiApp = TelescopePiApp.getInstance();
+    private Intent managerActivityIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,23 +84,31 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == BluetoothHelper.INTENT_ENABLE_BT) {
-            if (resultCode == RESULT_OK) {
-                Snackbar.make(findViewById(R.id.main_coordinator), R.string.bluetooth_enabled,
-                        Snackbar.LENGTH_SHORT).show();
-                btEnabledOnCreate = true;
-                showList();
+        switch (requestCode) {
+            case INTENT_ENABLE_BT: {
+                if (resultCode == RESULT_OK) {
+                    Snackbar.make(findViewById(R.id.main_coordinator), R.string.bluetooth_enabled,
+                            Snackbar.LENGTH_SHORT).show();
+                    btEnabledOnCreate = true;
+                    showList();
 
-            } else {
-                errorDialog.setMessage(R.string.bluetooth_must_be_enabled);
-                errorDialog.setPositiveButton(R.string.dialog_accept,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                finishAffinity();
-                            }
-                        });
-                errorDialog.show();
+                } else {
+                    errorDialog.setMessage(R.string.bluetooth_must_be_enabled);
+                    errorDialog.setPositiveButton(R.string.dialog_accept,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    finishAffinity();
+                                }
+                            });
+                    errorDialog.show();
+                }
+                break;
+            }
+
+            case INTENT_DISCOVERABLE: {
+                startActivity(managerActivityIntent);
+                break;
             }
         }
     }
@@ -113,9 +124,9 @@ public class MainActivity extends AppCompatActivity {
             btDevicesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Intent intent = new Intent(MainActivity.this, ManagerActivity.class);
-                    intent.putExtra(INTENT_DEVICE, pairedDevices[position].getName());
-                    startActivity(intent);
+                    managerActivityIntent = new Intent(MainActivity.this, ManagerActivity.class);
+                    managerActivityIntent.putExtra(INTENT_DEVICE, pairedDevices[position].getName());
+                    BluetoothHelper.requestDiscoverable(MainActivity.this);
                 }
             });
 
