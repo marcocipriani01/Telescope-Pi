@@ -136,7 +136,7 @@ def main():
                         data = client_sock.recv(1024)
                         if len(data) == 0:
                             break
-                        for line in data.splitlines():
+                        for line in data.decode().splitlines():
                             parse_rfcomm(line.strip())
                 except Exception as e:
                     print(str(e))
