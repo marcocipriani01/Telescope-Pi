@@ -1,3 +1,5 @@
+import configparser
+import os
 import signal
 import socket
 import sys
@@ -27,6 +29,7 @@ server_sock = None
 wifi_on = True
 led_thread_run = False
 emergency_led_run = True
+config_file = None
 
 
 def main():
@@ -56,6 +59,7 @@ def main():
     global type_pswd
     global indiweb
     global led_thread_run
+    global config_file
 
     if len(sys.argv) == 5:
         username = sys.argv[1]
@@ -69,16 +73,41 @@ def main():
         uuid = "b9029ed0-6d6a-4ff6-b318-215067a6d8b1"
         print("BT service UUID = " + uuid)
 
-        turn_on_wifi()
-        try:
-            if len(Cell.all(net_interface)) == 0:
-                print("No Wi-Fi networks found, starting hotspot.")
+        config_file = "{0}.{1}".format("/home" + username + "/", "Telescope-Pi.ini")
+        if username == "root":
+            if os.path.isdir("/home/pi/"):
+                config_file = "/home/pi/.Telescope-Pi.ini"
+            else:
+                config_file = None
+                print("Error! Invalid user!")
+                print("Running in emergency mode!")
+                emergency_mode_led()
+        config = configparser.ConfigParser()
+        if os.path.exists(config_file) and os.path.isfile(config_file):
+            config.read(config_file)
+            if "Wi-Fi" in config and config["Wi-Fi"] == "yes":
+                turn_on_wifi()
+                try:
+                    if len(Cell.all(net_interface)) == 0:
+                        print("No Wi-Fi networks found, starting hotspot.")
+                        start_hotspot()
+                except InterfaceError as e:
+                    print("An error occurred while scanning Wi-Fi network!")
+                    print(str(e))
+            if hotspot_enabled is False and "Hotspot" in config and config["Hotspot"] == "yes":
                 start_hotspot()
-        except InterfaceError as e:
-            print("An error occurred while scanning Wi-Fi newtwork!")
-            print(str(e))
-
-        indiweb_start()
+            if "INDI" in config and config["INDI"] == "yes":
+                indiweb_start()
+        else:
+            turn_on_wifi()
+            try:
+                if len(Cell.all(net_interface)) == 0:
+                    print("No Wi-Fi networks found, starting hotspot.")
+                    start_hotspot()
+            except InterfaceError as e:
+                print("An error occurred while scanning Wi-Fi network!")
+                print(str(e))
+            indiweb_start()
 
         try:
             server_sock = BluetoothSocket(RFCOMM)
@@ -454,6 +483,21 @@ def clean_indi(cmd=None, success=None, exit_code=None):
     """
     global indiweb
     indiweb = None
+
+
+def save_prefs():
+    global config_file
+    global wifi_on
+    global hotspot_enabled
+    global indiweb
+
+    if config_file is not None:
+        config = configparser.ConfigParser()
+        config["Wi-Fi"] = ("yes" if wifi_on is True else "no")
+        config["Hotspot"] = ("yes" if hotspot_enabled is True else "no")
+        config["INDI"] = ("yes" if indiweb is not None else "no")
+        with open(config_file, 'w') as file:
+            config.write(file)
 
 
 def shutdown_pi():

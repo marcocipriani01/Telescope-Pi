@@ -1,20 +1,20 @@
 #!/bin/bash
 function create_config {
   hostname="$(whiptail --title "Telescope-Pi" --inputbox "Enter a hostname for this device:" 8 70 3>&1 1>&2 2>&3)"
-  if [[ -z "$hostname" ]]; then
+  if [[ -z "${hostname}" ]]; then
       echo "Error!"
       exit 1
   fi
-  echo "Setting hostname to $hostname..."
-  /usr/bin/ch-hostname "$hostname"
+  echo "Setting hostname to ${hostname}..."
+  /usr/bin/ch-hostname "${hostname}"
 
-  echo "Looking for available newtwork interfaces..."
+  echo "Looking for available network interfaces..."
   interfaces=()
   while read -r line; do
-      interfaces+=($line "")
+      interfaces+=(${line} "")
   done <<< "$(/usr/bin/list-net-interfaces)"
-  interface="$(whiptail --title "Telescope-Pi" --menu "Please, select your Wi-Fi newtork interface:" 20 60 12 "${interfaces[@]}" 3>&1 1>&2 2>&3)"
-  if [[ -z "$interface" ]]; then
+  interface="$(whiptail --title "Telescope-Pi" --menu "Please, select your Wi-Fi network interface:" 20 60 12 "${interfaces[@]}" 3>&1 1>&2 2>&3)"
+  if [[ -z "${interface}" ]]; then
     echo "Error!"
     exit 2
   fi
@@ -29,20 +29,20 @@ function create_config {
     index=$((index+1))
   done < "/etc/passwd"
   username="$(whiptail --title "Telescope-Pi"  --menu "Telescope-Pi must run the INDI Web Manager as a non-root user. Choose your user in this list:" 25 78 15 "${users[@]}" 3>&1 1>&2 2>&3)"
-  echo "Username set to $username"
-  if [[ -z "$username" ]]; then
+  echo "Username set to ${username}"
+  if [[ -z "${username}" ]]; then
       echo "Error!"
       exit 3
   fi
 
   pswd="$(whiptail --title "Telescope-Pi" --inputbox "Enter a password for the hotspot:" 8 70 3>&1 1>&2 2>&3)"
-  if [[ -z "$pswd" ]]; then
+  if [[ -z "${pswd}" ]]; then
     echo "Error!"
     exit 4
   fi
 
   echo "Saving configuration... to /etc/telescope-pi"
-  echo "$username $interface $hostname $pswd" > /etc/telescope-pi
+  echo "${username} ${interface} ${hostname} ${pswd}" > /etc/telescope-pi
 }
 
 if [[ -f "/etc/telescope-pi" ]]; then
@@ -59,7 +59,7 @@ chmod +x /etc/update-motd.d/1-telescope-pi
 
 echo "Updating network configuration..."
 hostname="$(awk '{print $3}' /etc/telescope-pi)"
-if [[ -z "$hostname" ]]; then
+if [[ -z "${hostname}" ]]; then
     echo "Error!"
     exit 1
 fi
@@ -67,13 +67,13 @@ fi
 ln -sf /lib/systemd/resolv.conf /etc/resolv.conf
 
 username="$(awk '{print $1}' /etc/telescope-pi)"
-if [[ -z "$username" ]]; then
+if [[ -z "${username}" ]]; then
     echo "Error!"
     exit 3
 fi
 
 echo "Installing python packages..."
-pip3 install indiweb pybluez wifi sh psutil
+pip3 install indiweb pybluez wifi sh psutil configparser
 if [[ "$?" != "0" ]]; then
   echo "Error!"
   exit 5
@@ -88,12 +88,12 @@ if [[ -z "$(grep "DisablePlugins = pnat" "/etc/bluetooth/main.conf")" ]]; then
 fi
 sed -i 's#AutoEnable=false#AutoEnable=true#g' /etc/bluetooth/main.conf
 
-echo "Adding $username and root to the \"bluetooth\" group..."
+echo "Adding ${username} and root to the \"bluetooth\" group..."
 usermod -aG bluetooth "root"
-usermod -aG bluetooth "$username"
+usermod -aG bluetooth "${username}"
 
 echo "Updating services..."
-sed -i "s/USERNAME/$username/g" /lib/systemd/system/openfocuser.service
+sed -i "s/USERNAME/${username}/g" /lib/systemd/system/openfocuser.service
 systemctl daemon-reload
 
 echo "Starting system services..."
