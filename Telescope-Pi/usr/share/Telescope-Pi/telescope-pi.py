@@ -207,14 +207,14 @@ def parse_rfcomm(line):
                 bt_send("Busy=Looking for Wi-Fi access points...")
                 print("Looking for Wi-Fi access points...")
                 try:
-                    net_scan = Cell.all(net_interface)
-                    if len(list(net_scan)) == 0:
+                    net_scan = list(Cell.all(net_interface))
+                    if len(net_scan) == 0:
                         bt_send("WiFiAPs=[]")
                     else:
                         net_scan.sort(key=get_ap_quality, reverse=True)
                         msg = "WiFiAPs=[" + net_scan[0].ssid + \
                               "(" + net_scan[0].quality + ")"
-                        for i in range(1, min(len(list(net_scan)), 10)):
+                        for i in range(1, min(len(net_scan), 10)):
                             msg = msg + ", " + \
                                   net_scan[i].ssid + \
                                   "(" + net_scan[i].quality + ")"
@@ -233,7 +233,7 @@ def parse_rfcomm(line):
                 reboot("now")
             elif line[0] == '1':
                 i = int(line[1])
-                if 0 <= i < min(len(list(net_scan)), 10):
+                if 0 <= i < min(len(net_scan), 10):
                     ap = str(net_scan[i].ssid)
                     print("Connecting to Wi-Fi AP " + ap)
                     bt_send("Busy=Connecting to Wi-Fi AP " + ap)
