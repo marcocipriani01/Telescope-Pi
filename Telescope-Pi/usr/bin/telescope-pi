@@ -13,5 +13,5 @@ sudo service bluetooth start
 sudo rfkill unblock bluetooth
 sudo sdptool add SP > /dev/null
 echo "Bluetooth MAC address = $(hciconfig | grep Address | awk '{print $3}')"
-sudo python /usr/share/Telescope-Pi/telescope-pi.py "$(awk '{print $1}' /etc/telescope-pi)" "${interface}" "${hostname}" "$(awk '{print $4}' /etc/telescope-pi)"
+sudo python3 /usr/share/Telescope-Pi/telescope-pi.py "$(awk '{print $1}' /etc/telescope-pi)" "${interface}" "${hostname}" "$(awk '{print $4}' /etc/telescope-pi)"
 exit 0
