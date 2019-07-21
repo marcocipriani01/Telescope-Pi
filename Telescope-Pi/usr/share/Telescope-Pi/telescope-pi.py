@@ -1,4 +1,3 @@
-import configparser
 import os
 import signal
 import socket
@@ -14,6 +13,7 @@ from bluetooth import BluetoothSocket, RFCOMM, PORT_ANY, advertise_service, SERI
 from sh import sudo, nmcli, shutdown, reboot, bash, ErrorReturnCode, SignalException
 from wifi import Cell
 from wifi.exceptions import InterfaceError
+import configparser
 
 type_pswd = False
 ap = None
